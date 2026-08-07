@@ -65,7 +65,7 @@
     <section id="adm-sec-produk" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="fw-bold">Manajemen Produk</h3>
-        <button onclick="tambahProdukPrompt()" class="btn btn-primary">+ Tambah Produk</button>
+        <button onclick="bukaModalProduk()" class="btn btn-primary">+ Tambah Produk</button>
       </div>
       <div class="card p-3 shadow-sm">
         <div class="table-responsive">
@@ -161,22 +161,69 @@
           </div>
         </div>
       </div>
-<div class="card shadow-sm mt-4">
-    <div class="card-body">
-        <h5 class="fw-bold mb-3">Grafik Pendapatan Harian</h5>
-
-        <canvas id="grafikPendapatan" height="100"></canvas>
-
-    </div>
-</div>
+      <div class="card shadow-sm mt-4">
+        <div class="card-body">
+          <h5 class="fw-bold mb-3">Grafik Pendapatan Harian</h5>
+          <canvas id="grafikPendapatan" height="100"></canvas>
+        </div>
+      </div>
     </section>
 
   </main>
 
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- MODAL TAMBAH / EDIT PRODUK -->
+  <div class="modal fade" id="modalProduk" tabindex="-1" aria-labelledby="modalProdukLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="modalProdukLabel">Tambah Produk</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="formProduk" onsubmit="simpanProduk(event)">
+          <div class="modal-body">
+            <input type="hidden" id="prodIndex">
+            
+            <div class="mb-3">
+              <label for="prodNama" class="form-label fw-semibold">Nama Produk</label>
+              <input type="text" class="form-control" id="prodNama" placeholder="Contoh: Sepatu Sneaker" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="prodKategori" class="form-label fw-semibold">Kategori</label>
+              <input type="text" class="form-control" id="prodKategori" placeholder="Contoh: Pakaian / Elekronik" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="prodHarga" class="form-label fw-semibold">Harga (Rp)</label>
+              <input type="number" class="form-control" id="prodHarga" placeholder="150000" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="prodStok" class="form-label fw-semibold">Stok</label>
+              <input type="number" class="form-control" id="prodStok" placeholder="10" required>
+            </div>
+            
+            <div class="mb-3">
+              <label for="prodGambarFile" class="form-label fw-semibold">Pilih Gambar dari Galeri</label>
+              <input type="file" class="form-control" id="prodGambarFile" accept="image/*" onchange="previewGambarGaleri(event)">
+              
+              <!-- Container Pratinjau Gambar -->
+              <div class="mt-2 text-center">
+                <img id="prodGambarPreview" src="#" alt="Preview Gambar" class="img-thumbnail d-none" style="max-height: 180px;">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan Produk</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
