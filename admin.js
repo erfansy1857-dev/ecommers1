@@ -73,7 +73,7 @@ function bukaModalProduk(idx = null) {
   const modalEl = document.getElementById('modalProduk');
   
   if (!modalEl) {
-    alert('Elemen modal tidak ditemukan di HTML! Pastikan kode HTML modal sudah tersimpan.');
+    alert('Elemen modal tidak ditemukan di HTML!');
     return;
   }
 
@@ -122,7 +122,6 @@ function bukaModalProduk(idx = null) {
   }
 }
 
-// Alias fungsi jika ada tombol lama yang memanggil fungsi ini
 function tambahProdukPrompt() {
   bukaModalProduk();
 }
@@ -145,7 +144,7 @@ function previewGambarGaleri(event) {
   }
 }
 
-// Kompresi Gambar Otomatis untuk Galeri HP
+// Kompresi Gambar Otomatis
 function kompresGambar(file, maxWidth = 600, quality = 0.7) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -190,11 +189,9 @@ async function simpanProduk(event) {
   let gambarUrl = '';
 
   try {
-    // Jika memilih file baru dari galeri HP/PC
     if (fileInput && fileInput.files && fileInput.files[0]) {
       gambarUrl = await kompresGambar(fileInput.files[0]);
     } else if (idx !== '' && produkList[idx]) {
-      // Gunakan gambar lama jika sedang edit
       gambarUrl = produkList[idx].gambar;
     } else {
       alert('Silakan pilih gambar terlebih dahulu!');
@@ -202,17 +199,14 @@ async function simpanProduk(event) {
     }
 
     if (idx !== '') {
-      // Edit Produk
       produkList[idx] = { ...produkList[idx], nama, harga, stok, kategori, gambar: gambarUrl };
     } else {
-      // Tambah Produk Baru
       const produkBaru = { id: Date.now(), nama, harga, stok, kategori, gambar: gambarUrl };
       produkList.push(produkBaru);
     }
 
     saveAndRefresh();
 
-    // Tutup Modal
     const modalEl = document.getElementById('modalProduk');
     if (modalEl) {
       const modal = bootstrap.Modal.getInstance(modalEl);
@@ -237,7 +231,7 @@ function hapusProduk(idx) {
   }
 }
 
-// 3. Pesanan
+// 3. PESANAN (Ditambahkan tampilan Metode Pembayaran)
 function renderAdminPesanan() {
   const tbody = document.getElementById('adminPesananTable');
   if (!tbody) return;
@@ -246,6 +240,7 @@ function renderAdminPesanan() {
   pesananList.forEach(p => {
     const barangStr = p.items ? p.items.map(i => i.nama).join(', ') : '-';
     const tgl = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-';
+    const metode = p.metodePembayaran || 'Transfer Bank';
 
     tbody.innerHTML += `
       <tr>
@@ -254,6 +249,7 @@ function renderAdminPesanan() {
         <td>${p.telepon}</td>
         <td>${p.alamat}</td>
         <td><small>${barangStr}</small></td>
+        <td><span class="badge bg-info text-dark">${metode}</span></td>
         <td class="text-success fw-bold">Rp ${(p.totalHarga || 0).toLocaleString('id-ID')}</td>
       </tr>
     `;
