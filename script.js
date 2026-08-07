@@ -226,6 +226,10 @@ function handleCheckout(e) {
   const telp = document.getElementById('custTelp').value;
   const alamat = document.getElementById('custAlamat').value;
 
+  // Mengambil pilihan Metode Pembayaran yang dicentang
+  const metodeSelected = document.querySelector('input[name="metodeBayar"]:checked');
+  const metodePembayaran = metodeSelected ? metodeSelected.value : 'Transfer Bank';
+
   const totalHarga = keranjangList.reduce((sum, item) => sum + item.harga, 0);
 
   const pesananBaru = {
@@ -233,6 +237,7 @@ function handleCheckout(e) {
     nama,
     telepon: telp,
     alamat,
+    metodePembayaran, // <-- Tersimpan ke data pesanan
     totalHarga,
     tanggal: new Date().toISOString(),
     items: [...keranjangList]
@@ -246,7 +251,7 @@ function handleCheckout(e) {
   keranjangList = [];
   localStorage.setItem('keranjang', JSON.stringify([]));
 
-  alert('Pesanan Berhasil!');
+  alert(`Pesanan Berhasil!\nMetode Pembayaran: ${metodePembayaran}`);
   document.getElementById('checkoutForm').reset();
   renderKeranjang();
   updateCartBadge();
