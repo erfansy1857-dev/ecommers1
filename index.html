@@ -10,8 +10,8 @@
 </head>
 <body>
 
-  <!-- Sticky Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+  <!-- Floating Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary floating-nav">
     <div class="container">
       <a class="navbar-brand fw-bold" href="#">TokoKita</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -106,6 +106,38 @@
                 <label class="form-label">Alamat Lengkap</label>
                 <textarea id="custAlamat" class="form-control" rows="3" required></textarea>
               </div>
+
+              <!-- Pilihan Metode Pembayaran -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Metode Pembayaran</label>
+                <div class="d-flex flex-column gap-2">
+                  <div class="form-check border p-2 rounded">
+                    <input class="form-check-input ms-1" type="radio" name="metodeBayar" id="qris" value="QRIS" checked>
+                    <label class="form-check-label ms-2 fw-semibold" for="qris">
+                      📱 QRIS (All E-Wallet / M-Banking)
+                    </label>
+                  </div>
+                  <div class="form-check border p-2 rounded">
+                    <input class="form-check-input ms-1" type="radio" name="metodeBayar" id="bank" value="Transfer Bank">
+                    <label class="form-check-label ms-2 fw-semibold" for="bank">
+                      🏦 Transfer Bank (BCA / Mandiri / BRI)
+                    </label>
+                  </div>
+                  <div class="form-check border p-2 rounded">
+                    <input class="form-check-input ms-1" type="radio" name="metodeBayar" id="ewallet" value="E-Wallet">
+                    <label class="form-check-label ms-2 fw-semibold" for="ewallet">
+                      💳 E-Wallet (DANA / OVO / GoPay)
+                    </label>
+                  </div>
+                  <div class="form-check border p-2 rounded">
+                    <input class="form-check-input ms-1" type="radio" name="metodeBayar" id="cod" value="COD (Bayar di Tempat)">
+                    <label class="form-check-label ms-2 fw-semibold" for="cod">
+                      💵 COD (Bayar di Tempat)
+                    </label>
+                  </div>
+                </div>
+              </div>
+
               <button type="submit" class="btn btn-success w-100">Checkout Sekarang</button>
             </form>
           </div>
