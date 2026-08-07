@@ -4,19 +4,28 @@ if (localStorage.getItem('isAdmin') !== 'true') {
   window.location.href = 'login.html';
 }
 
-// Ambil Data awal
+// Ambil Data awal dari LocalStorage
 let produkList = JSON.parse(localStorage.getItem('produk')) || [];
 let pesananList = JSON.parse(localStorage.getItem('pesanan')) || [];
 let flashSaleList = JSON.parse(localStorage.getItem('flashsale')) || [];
 
-// Navigasi Admin
+// Navigasi Admin (Pindah Tab)
 function showAdminSection(sec) {
+  const mapLink = {
+    'dashboard': 'adm-dash-link',
+    'produk': 'adm-prod-link',
+    'pesanan': 'adm-pesan-link',
+    'flashsale': 'adm-flash-link',
+    'laporan': 'adm-lapor-link'
+  };
+
   ['dashboard', 'produk', 'pesanan', 'flashsale', 'laporan'].forEach(s => {
-    document.getElementById(`adm-sec-${s}`).classList.add('d-none');
-    document.getElementById(`adm-${s.substring(0, 4)}-link`)?.classList.remove('active');
+    document.getElementById(`adm-sec-${s}`)?.classList.add('d-none');
+    document.getElementById(mapLink[s])?.classList.remove('active');
   });
 
-  document.getElementById(`adm-sec-${sec}`).classList.remove('d-none');
+  document.getElementById(`adm-sec-${sec}`)?.classList.remove('d-none');
+  document.getElementById(mapLink[sec])?.classList.add('active');
 
   if (sec === 'dashboard') renderAdminDashboard();
   if (sec === 'produk') renderAdminProduk();
@@ -27,22 +36,25 @@ function showAdminSection(sec) {
 
 // 1. Dashboard
 function renderAdminDashboard() {
-  document.getElementById('dashTotalProduk').innerText = produkList.length;
+  const totalEl = document.getElementById('dashTotalProduk');
+  if (totalEl) totalEl.innerText = produkList.length;
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const countToday = pesananList.filter(p => p.tanggal.startsWith(todayStr)).length;
-  document.getElementById('dashPesananHariIni').innerText = countToday;
+  const countToday = pesananList.filter(p => p.tanggal && p.tanggal.startsWith(todayStr)).length;
+  const todayEl = document.getElementById('dashPesananHariIni');
+  if (todayEl) todayEl.innerText = countToday;
 }
 
-// 2. Produk (Manajemen Produk via Modal Galeri)
+// 2. Produk
 function renderAdminProduk() {
   const tbody = document.getElementById('adminProdukTable');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   produkList.forEach((p, idx) => {
     tbody.innerHTML += `
       <tr>
-        <td><img src="${p.gambar}" width="50" height="50" class="rounded object-fit-cover"></td>
+        <td><img src="${p.gambar}" width="50" height="50" class="rounded object-fit-cover" alt="${p.nama}"></td>
         <td class="fw-bold">${p.nama}</td>
         <td><span class="badge bg-secondary">${p.kategori}</span></td>
         <td>Rp ${p.harga.toLocaleString('id-ID')}</td>
@@ -58,58 +70,110 @@ function renderAdminProduk() {
 
 // Buka Modal Tambah/Edit Produk
 function bukaModalProduk(idx = null) {
-  const form = document.getElementById('formProduk');
-  form.reset();
+  const modalEl = document.getElementById('modalProduk');
   
+  if (!modalEl) {
+    alert('Elemen modal tidak ditemukan di HTML! Pastikan kode HTML modal sudah tersimpan.');
+    return;
+  }
+
+  const form = document.getElementById('formProduk');
+  if (form) form.reset();
+
   const preview = document.getElementById('prodGambarPreview');
-  preview.src = '#';
-  preview.classList.add('d-none');
+  if (preview) {
+    preview.src = '#';
+    preview.classList.add('d-none');
+  }
+
+  const fileInput = document.getElementById('prodGambarFile');
+  if (fileInput) fileInput.value = '';
 
   if (idx !== null) {
     // Mode Edit
     const p = produkList[idx];
-    document.getElementById('modalProdukLabel').innerText = 'Edit Produk';
+    const label = document.getElementById('modalProdukLabel');
+    if (label) label.innerText = 'Edit Produk';
+    
     document.getElementById('prodIndex').value = idx;
-    document.getElementById('prodNama').value = p.nama;
-    document.getElementById('prodKategori').value = p.kategori;
-    document.getElementById('prodHarga').value = p.harga;
-    document.getElementById('prodStok').value = p.stok;
+    document.getElementById('prodNama').value = p.nama || '';
+    document.getElementById('prodKategori').value = p.kategori || '';
+    document.getElementById('prodHarga').value = p.harga || 0;
+    document.getElementById('prodStok').value = p.stok || 0;
 
-    if (p.gambar) {
+    if (p.gambar && preview) {
       preview.src = p.gambar;
       preview.classList.remove('d-none');
     }
   } else {
     // Mode Tambah
-    document.getElementById('modalProdukLabel').innerText = 'Tambah Produk';
+    const label = document.getElementById('modalProdukLabel');
+    if (label) label.innerText = 'Tambah Produk';
+    
     document.getElementById('prodIndex').value = '';
   }
 
-  const modal = new bootstrap.Modal(document.getElementById('modalProduk'));
-  modal.show();
+  try {
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  } catch (err) {
+    console.error('Gagal membuka modal Bootstrap:', err);
+    alert('Gagal membuka form modal.');
+  }
 }
 
-// Fungsi Alias agar tombol lama '+ Tambah Produk' tetap bekerja
+// Alias fungsi jika ada tombol lama yang memanggil fungsi ini
 function tambahProdukPrompt() {
   bukaModalProduk();
 }
 
-// Pratinjau Gambar saat memilih dari galeri
+// Pratinjau Gambar saat memilih file dari galeri
 function previewGambarGaleri(event) {
   const file = event.target.files[0];
   const preview = document.getElementById('prodGambarPreview');
 
-  if (file) {
+  if (file && preview) {
     const reader = new FileReader();
     reader.onload = function(e) {
       preview.src = e.target.result;
       preview.classList.remove('d-none');
     };
     reader.readAsDataURL(file);
-  } else {
+  } else if (preview) {
     preview.src = '#';
     preview.classList.add('d-none');
   }
+}
+
+// Kompresi Gambar Otomatis untuk Galeri HP
+function kompresGambar(file, maxWidth = 600, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
 }
 
 // Simpan Produk (Tambah Baru / Edit)
@@ -122,45 +186,44 @@ async function simpanProduk(event) {
   const harga = parseInt(document.getElementById('prodHarga').value);
   const stok = parseInt(document.getElementById('prodStok').value);
   const fileInput = document.getElementById('prodGambarFile');
-  
+
   let gambarUrl = '';
 
-  // Jika memilih file baru dari galeri
-  if (fileInput.files && fileInput.files[0]) {
-    gambarUrl = await fileToBase64(fileInput.files[0]);
-  } else if (idx !== '') {
-    // Gunakan gambar lama jika sedang edit dan tidak pilih file baru
-    gambarUrl = produkList[idx].gambar;
-  } else {
-    alert('Silakan pilih gambar dari galeri!');
-    return;
+  try {
+    // Jika memilih file baru dari galeri HP/PC
+    if (fileInput && fileInput.files && fileInput.files[0]) {
+      gambarUrl = await kompresGambar(fileInput.files[0]);
+    } else if (idx !== '' && produkList[idx]) {
+      // Gunakan gambar lama jika sedang edit
+      gambarUrl = produkList[idx].gambar;
+    } else {
+      alert('Silakan pilih gambar terlebih dahulu!');
+      return;
+    }
+
+    if (idx !== '') {
+      // Edit Produk
+      produkList[idx] = { ...produkList[idx], nama, harga, stok, kategori, gambar: gambarUrl };
+    } else {
+      // Tambah Produk Baru
+      const produkBaru = { id: Date.now(), nama, harga, stok, kategori, gambar: gambarUrl };
+      produkList.push(produkBaru);
+    }
+
+    saveAndRefresh();
+
+    // Tutup Modal
+    const modalEl = document.getElementById('modalProduk');
+    if (modalEl) {
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      if (modal) modal.hide();
+    }
+
+    alert('Produk berhasil disimpan!');
+  } catch (error) {
+    console.error('Gagal menyimpan produk:', error);
+    alert('Terjadi kesalahan saat mengolah gambar.');
   }
-
-  if (idx !== '') {
-    // Edit Produk
-    produkList[idx] = { ...produkList[idx], nama, harga, stok, kategori, gambar: gambarUrl };
-  } else {
-    // Tambah Produk Baru
-    const produkBaru = { id: Date.now(), nama, harga, stok, kategori, gambar: gambarUrl };
-    produkList.push(produkBaru);
-  }
-
-  saveAndRefresh();
-
-  // Tutup Modal
-  const modalEl = document.getElementById('modalProduk');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  modal.hide();
-}
-
-// Convert File Gambar ke Base64 String untuk localStorage
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-    reader.readAsDataURL(file);
-  });
 }
 
 function editProduk(idx) {
@@ -177,11 +240,12 @@ function hapusProduk(idx) {
 // 3. Pesanan
 function renderAdminPesanan() {
   const tbody = document.getElementById('adminPesananTable');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   pesananList.forEach(p => {
-    const barangStr = p.items.map(i => i.nama).join(', ');
-    const tgl = new Date(p.tanggal).toLocaleDateString('id-ID');
+    const barangStr = p.items ? p.items.map(i => i.nama).join(', ') : '-';
+    const tgl = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-';
 
     tbody.innerHTML += `
       <tr>
@@ -190,7 +254,7 @@ function renderAdminPesanan() {
         <td>${p.telepon}</td>
         <td>${p.alamat}</td>
         <td><small>${barangStr}</small></td>
-        <td class="text-success fw-bold">Rp ${p.totalHarga.toLocaleString('id-ID')}</td>
+        <td class="text-success fw-bold">Rp ${(p.totalHarga || 0).toLocaleString('id-ID')}</td>
       </tr>
     `;
   });
@@ -199,6 +263,7 @@ function renderAdminPesanan() {
 // 4. Flash Sale
 function renderAdminFlashSale() {
   const tbody = document.getElementById('adminFlashTable');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
   flashSaleList.forEach((fs, idx) => {
@@ -257,6 +322,7 @@ function renderAdminLaporan() {
   let totalMinggu = 0, totalBulan = 0, totalTahun = 0, totalKeseluruhan = 0;
 
   pesananList.forEach(p => {
+    if (!p.tanggal || !p.totalHarga) return;
     const tgl = new Date(p.tanggal);
     const diffTime = Math.abs(now - tgl);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -268,10 +334,16 @@ function renderAdminLaporan() {
     if (tgl.getFullYear() === now.getFullYear()) totalTahun += p.totalHarga;
   });
 
-  document.getElementById('lapMinggu').innerText = `Rp ${totalMinggu.toLocaleString('id-ID')}`;
-  document.getElementById('lapBulan').innerText = `Rp ${totalBulan.toLocaleString('id-ID')}`;
-  document.getElementById('lapTahun').innerText = `Rp ${totalTahun.toLocaleString('id-ID')}`;
-  document.getElementById('lapTotal').innerText = `Rp ${totalKeseluruhan.toLocaleString('id-ID')}`;
+  const lapMinggu = document.getElementById('lapMinggu');
+  const lapBulan = document.getElementById('lapBulan');
+  const lapTahun = document.getElementById('lapTahun');
+  const lapTotal = document.getElementById('lapTotal');
+
+  if (lapMinggu) lapMinggu.innerText = `Rp ${totalMinggu.toLocaleString('id-ID')}`;
+  if (lapBulan) lapBulan.innerText = `Rp ${totalBulan.toLocaleString('id-ID')}`;
+  if (lapTahun) lapTahun.innerText = `Rp ${totalTahun.toLocaleString('id-ID')}`;
+  if (lapTotal) lapTotal.innerText = `Rp ${totalKeseluruhan.toLocaleString('id-ID')}`;
+
   renderGrafikPendapatan();
 }
 
@@ -288,12 +360,14 @@ function logoutAdmin() {
   window.location.href = 'login.html';
 }
 
+// Grafik Pendapatan via Chart.js
 let chartPendapatan = null;
 
 function renderGrafikPendapatan() {
   const dataHarian = {};
 
   pesananList.forEach(p => {
+    if (!p.tanggal || !p.totalHarga) return;
     const tanggal = new Date(p.tanggal).toLocaleDateString("id-ID");
 
     if (!dataHarian[tanggal]) {
@@ -338,5 +412,5 @@ function renderGrafikPendapatan() {
   });
 }
 
-// Initial View
+// Jalankan tampilan awal
 renderAdminDashboard();
