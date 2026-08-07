@@ -11,6 +11,30 @@ main {
   flex: 1;
 }
 
+/* Navbar Mengambang (Floating Navbar) */
+.floating-nav {
+  position: sticky;
+  top: 15px;
+  z-index: 1030;
+  width: 92%;
+  max-width: 1200px;
+  margin: 15px auto 25px auto;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+/* Responsif Navbar Mengambang di HP */
+@media (max-width: 576px) {
+  .floating-nav {
+    width: 95%;
+    top: 10px;
+    margin: 10px auto 20px auto;
+    border-radius: 12px;
+  }
+}
+
 /* Card Styling */
 .card {
   border: none;
@@ -63,5 +87,5 @@ main {
 /* Navigation Active State */
 .nav-link.active {
   font-weight: bold;
-  border-bottom: 2px solid #0d6efd;
+  border-bottom: 2px solid #ffffff;
 }
