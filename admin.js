@@ -193,8 +193,7 @@ function renderAdminLaporan() {
   document.getElementById('lapTahun').innerText = `Rp ${totalTahun.toLocaleString('id-ID')}`;
   document.getElementById('lapTotal').innerText = `Rp ${totalKeseluruhan.toLocaleString('id-ID')}`;
 }
-// Initial View
-renderAdminDashboard();
+renderGrafikPendapatan();
 // Helper Simpan & Update Data
 function saveAndRefresh() {
   localStorage.setItem('produk', JSON.stringify(produkList));
