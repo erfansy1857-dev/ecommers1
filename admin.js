@@ -17,7 +17,7 @@ function showAdminSection(sec) {
   });
 
   document.getElementById(`adm-sec-${sec}`).classList.remove('d-none');
-  
+
   if (sec === 'dashboard') renderAdminDashboard();
   if (sec === 'produk') renderAdminProduk();
   if (sec === 'pesanan') renderAdminPesanan();
@@ -34,7 +34,7 @@ function renderAdminDashboard() {
   document.getElementById('dashPesananHariIni').innerText = countToday;
 }
 
-// 2. Produk (Tambah via Prompt)
+// 2. Produk (Manajemen Produk via Modal Galeri)
 function renderAdminProduk() {
   const tbody = document.getElementById('adminProdukTable');
   tbody.innerHTML = '';
@@ -56,35 +56,115 @@ function renderAdminProduk() {
   });
 }
 
-function tambahProdukPrompt() {
-  const nama = prompt("Masukkan Nama Produk:");
-  if (!nama) return;
-  const harga = parseInt(prompt("Masukkan Harga Produk (Angka):"));
-  const stok = parseInt(prompt("Masukkan Stok Produk (Angka):"));
-  const kategori = prompt("Masukkan Kategori Produk:");
-  const gambar = prompt("Masukkan URL Gambar Produk:");
+// Buka Modal Tambah/Edit Produk
+function bukaModalProduk(idx = null) {
+  const form = document.getElementById('formProduk');
+  form.reset();
+  
+  const preview = document.getElementById('prodGambarPreview');
+  preview.src = '#';
+  preview.classList.add('d-none');
 
-  if (nama && !isNaN(harga) && !isNaN(stok) && kategori && gambar) {
-    const produkBaru = { id: Date.now(), nama, harga, stok, kategori, gambar };
-    produkList.push(produkBaru);
-    saveAndRefresh();
+  if (idx !== null) {
+    // Mode Edit
+    const p = produkList[idx];
+    document.getElementById('modalProdukLabel').innerText = 'Edit Produk';
+    document.getElementById('prodIndex').value = idx;
+    document.getElementById('prodNama').value = p.nama;
+    document.getElementById('prodKategori').value = p.kategori;
+    document.getElementById('prodHarga').value = p.harga;
+    document.getElementById('prodStok').value = p.stok;
+
+    if (p.gambar) {
+      preview.src = p.gambar;
+      preview.classList.remove('d-none');
+    }
   } else {
-    alert("Input tidak valid!");
+    // Mode Tambah
+    document.getElementById('modalProdukLabel').innerText = 'Tambah Produk';
+    document.getElementById('prodIndex').value = '';
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById('modalProduk'));
+  modal.show();
+}
+
+// Fungsi Alias agar tombol lama '+ Tambah Produk' tetap bekerja
+function tambahProdukPrompt() {
+  bukaModalProduk();
+}
+
+// Pratinjau Gambar saat memilih dari galeri
+function previewGambarGaleri(event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('prodGambarPreview');
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.classList.remove('d-none');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    preview.src = '#';
+    preview.classList.add('d-none');
   }
 }
 
-function editProduk(idx) {
-  const p = produkList[idx];
-  const nama = prompt("Edit Nama Produk:", p.nama);
-  const harga = parseInt(prompt("Edit Harga Produk:", p.harga));
-  const stok = parseInt(prompt("Edit Stok Produk:", p.stok));
-  const kategori = prompt("Edit Kategori Produk:", p.kategori);
-  const gambar = prompt("Edit URL Gambar:", p.gambar);
+// Simpan Produk (Tambah Baru / Edit)
+async function simpanProduk(event) {
+  event.preventDefault();
 
-  if (nama && !isNaN(harga) && !isNaN(stok) && kategori && gambar) {
-    produkList[idx] = { ...p, nama, harga, stok, kategori, gambar };
-    saveAndRefresh();
+  const idx = document.getElementById('prodIndex').value;
+  const nama = document.getElementById('prodNama').value.trim();
+  const kategori = document.getElementById('prodKategori').value.trim();
+  const harga = parseInt(document.getElementById('prodHarga').value);
+  const stok = parseInt(document.getElementById('prodStok').value);
+  const fileInput = document.getElementById('prodGambarFile');
+  
+  let gambarUrl = '';
+
+  // Jika memilih file baru dari galeri
+  if (fileInput.files && fileInput.files[0]) {
+    gambarUrl = await fileToBase64(fileInput.files[0]);
+  } else if (idx !== '') {
+    // Gunakan gambar lama jika sedang edit dan tidak pilih file baru
+    gambarUrl = produkList[idx].gambar;
+  } else {
+    alert('Silakan pilih gambar dari galeri!');
+    return;
   }
+
+  if (idx !== '') {
+    // Edit Produk
+    produkList[idx] = { ...produkList[idx], nama, harga, stok, kategori, gambar: gambarUrl };
+  } else {
+    // Tambah Produk Baru
+    const produkBaru = { id: Date.now(), nama, harga, stok, kategori, gambar: gambarUrl };
+    produkList.push(produkBaru);
+  }
+
+  saveAndRefresh();
+
+  // Tutup Modal
+  const modalEl = document.getElementById('modalProduk');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  modal.hide();
+}
+
+// Convert File Gambar ke Base64 String untuk localStorage
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function editProduk(idx) {
+  bukaModalProduk(idx);
 }
 
 function hapusProduk(idx) {
@@ -192,8 +272,9 @@ function renderAdminLaporan() {
   document.getElementById('lapBulan').innerText = `Rp ${totalBulan.toLocaleString('id-ID')}`;
   document.getElementById('lapTahun').innerText = `Rp ${totalTahun.toLocaleString('id-ID')}`;
   document.getElementById('lapTotal').innerText = `Rp ${totalKeseluruhan.toLocaleString('id-ID')}`;
-renderGrafikPendapatan();
+  renderGrafikPendapatan();
 }
+
 // Helper Simpan & Update Data
 function saveAndRefresh() {
   localStorage.setItem('produk', JSON.stringify(produkList));
@@ -206,79 +287,56 @@ function logoutAdmin() {
   localStorage.removeItem('userLoggedIn');
   window.location.href = 'login.html';
 }
+
 let chartPendapatan = null;
 
 function renderGrafikPendapatan() {
+  const dataHarian = {};
 
-    const dataHarian = {};
+  pesananList.forEach(p => {
+    const tanggal = new Date(p.tanggal).toLocaleDateString("id-ID");
 
-    pesananList.forEach(p => {
-
-        const tanggal = new Date(p.tanggal).toLocaleDateString("id-ID");
-
-        if (!dataHarian[tanggal]) {
-            dataHarian[tanggal] = 0;
-        }
-
-        dataHarian[tanggal] += p.totalHarga;
-
-    });
-
-    const labels = Object.keys(dataHarian);
-    const data = Object.values(dataHarian);
-
-    const ctx = document.getElementById("grafikPendapatan");
-
-    if (!ctx) return;
-
-    if (chartPendapatan) {
-        chartPendapatan.destroy();
+    if (!dataHarian[tanggal]) {
+      dataHarian[tanggal] = 0;
     }
 
-    chartPendapatan = new Chart(ctx, {
+    dataHarian[tanggal] += p.totalHarga;
+  });
 
-        type: "line",
+  const labels = Object.keys(dataHarian);
+  const data = Object.values(dataHarian);
 
-        data: {
+  const ctx = document.getElementById("grafikPendapatan");
 
-            labels: labels,
+  if (!ctx) return;
 
-            datasets: [{
+  if (chartPendapatan) {
+    chartPendapatan.destroy();
+  }
 
-                label: "Pendapatan Harian",
-
-                data: data,
-
-                borderColor: "#198754",
-
-                backgroundColor: "rgba(25,135,84,0.2)",
-
-                fill: true,
-
-                tension: 0.3
-
-            }]
-
-        },
-
-        options: {
-
-            responsive: true,
-
-            plugins: {
-
-                legend: {
-
-                    display: true
-
-                }
-
-            }
-
+  chartPendapatan = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Pendapatan Harian",
+        data: data,
+        borderColor: "#198754",
+        backgroundColor: "rgba(25,135,84,0.2)",
+        fill: true,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true
         }
-
-    });
-
+      }
+    }
+  });
 }
+
 // Initial View
 renderAdminDashboard();
