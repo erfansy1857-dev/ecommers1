@@ -206,6 +206,79 @@ function logoutAdmin() {
   localStorage.removeItem('userLoggedIn');
   window.location.href = 'login.html';
 }
+let chartPendapatan = null;
 
+function renderGrafikPendapatan() {
+
+    const dataHarian = {};
+
+    pesananList.forEach(p => {
+
+        const tanggal = new Date(p.tanggal).toLocaleDateString("id-ID");
+
+        if (!dataHarian[tanggal]) {
+            dataHarian[tanggal] = 0;
+        }
+
+        dataHarian[tanggal] += p.totalHarga;
+
+    });
+
+    const labels = Object.keys(dataHarian);
+    const data = Object.values(dataHarian);
+
+    const ctx = document.getElementById("grafikPendapatan");
+
+    if (!ctx) return;
+
+    if (chartPendapatan) {
+        chartPendapatan.destroy();
+    }
+
+    chartPendapatan = new Chart(ctx, {
+
+        type: "line",
+
+        data: {
+
+            labels: labels,
+
+            datasets: [{
+
+                label: "Pendapatan Harian",
+
+                data: data,
+
+                borderColor: "#198754",
+
+                backgroundColor: "rgba(25,135,84,0.2)",
+
+                fill: true,
+
+                tension: 0.3
+
+            }]
+
+        },
+
+        options: {
+
+            responsive: true,
+
+            plugins: {
+
+                legend: {
+
+                    display: true
+
+                }
+
+            }
+
+        }
+
+    });
+
+}
 // Initial View
 renderAdminDashboard();
