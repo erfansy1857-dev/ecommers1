@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - TokoKita</title>
+  <!-- Bootstrap 5.3 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar Admin -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container">
+      <a class="navbar-brand fw-bold text-warning" href="#">Admin Panel</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="adminNavbar">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" id="adm-dash-link" href="#" onclick="showAdminSection('dashboard')">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="adm-prod-link" href="#" onclick="showAdminSection('produk')">Produk</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="adm-pesan-link" href="#" onclick="showAdminSection('pesanan')">Pesanan</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="adm-flash-link" href="#" onclick="showAdminSection('flashsale')">Flash Sale</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="adm-lapor-link" href="#" onclick="showAdminSection('laporan')">Laporan</a>
+          </li>
+        </ul>
+        <button onclick="logoutAdmin()" class="btn btn-outline-danger btn-sm">Keluar</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container py-4">
+
+    <!-- 1. DASHBOARD -->
+    <section id="adm-sec-dashboard">
+      <h3 class="fw-bold mb-4">Ringkasan Dashboard</h3>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card bg-primary text-white p-3 shadow-sm">
+            <h5>Total Produk</h5>
+            <h2 class="fw-bold" id="dashTotalProduk">0</h2>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card bg-success text-white p-3 shadow-sm">
+            <h5>Jumlah Pesanan Hari Ini</h5>
+            <h2 class="fw-bold" id="dashPesananHariIni">0</h2>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PRODUK -->
+    <section id="adm-sec-produk" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">Manajemen Produk</h3>
+        <button onclick="tambahProdukPrompt()" class="btn btn-primary">+ Tambah Produk</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Gambar</th>
+                <th>Nama</th>
+                <th>Kategori</th>
+                <th>Harga</th>
+                <th>Stok</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="adminProdukTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PESANAN -->
+    <section id="adm-sec-pesanan" class="d-none">
+      <h3 class="fw-bold mb-3">Daftar Pesanan</h3>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Nama</th>
+                <th>No Telp</th>
+                <th>Alamat</th>
+                <th>Barang</th>
+                <th>Total Harga</th>
+              </tr>
+            </thead>
+            <tbody id="adminPesananTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. FLASH SALE -->
+    <section id="adm-sec-flashsale" class="d-none">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold">Manajemen Flash Sale</h3>
+        <button onclick="tambahFlashSalePrompt()" class="btn btn-danger">+ Tambah Flash Sale</button>
+      </div>
+      <div class="card p-3 shadow-sm">
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th>Harga Asli</th>
+                <th>Diskon (%)</th>
+                <th>Harga Diskon</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="adminFlashTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LAPORAN -->
+    <section id="adm-sec-laporan" class="d-none">
+      <h3 class="fw-bold mb-4">Rekap Penjualan</h3>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="card p-3 shadow-sm border-start border-4 border-primary">
+            <h6>Minggu Ini</h6>
+            <h4 class="fw-bold" id="lapMinggu">Rp 0</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-3 shadow-sm border-start border-4 border-info">
+            <h6>Bulan Ini</h6>
+            <h4 class="fw-bold" id="lapBulan">Rp 0</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-3 shadow-sm border-start border-4 border-warning">
+            <h6>Tahun Ini</h6>
+            <h4 class="fw-bold" id="lapTahun">Rp 0</h4>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card p-3 shadow-sm border-start border-4 border-success">
+            <h6>Total Pendapatan</h6>
+            <h4 class="fw-bold text-success" id="lapTotal">Rp 0</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
