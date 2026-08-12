@@ -1,47 +1,66 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - E-Commerce</title>
-  <!-- Bootstrap 5.3 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Elektronik Store</title>
+    <!-- Google Fonts Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-light d-flex align-items-center justify-content-center min-vh-100 py-4">
+<body class="bg-login d-flex align-items-center justify-content-center min-vh-100 py-5">
 
-  <div class="container d-flex justify-content-center">
-    <div class="card shadow-lg login-container p-4" style="max-width: 420px; width: 100%;">
-      <div class="text-center mb-4">
-        <h3 class="fw-bold text-primary">Toko Online</h3>
-        <p class="text-muted">Silakan pilih akses masuk Anda</p>
-      </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="card shadow-lg border-0 rounded-4 text-center p-4 bg-white">
+                    <div class="mb-3">
+                        <div class="bg-warning text-dark d-inline-flex align-items-center justify-content-center rounded-circle shadow-sm mb-2" style="width: 70px; height: 70px;">
+                            <i class="bi bi-lightning-charge-fill fs-1"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark mt-2 mb-1">ElektronikStore</h3>
+                        <p class="text-muted small">Silakan pilih akses untuk melanjutkan</p>
+                    </div>
 
-      <!-- Form Login Admin -->
-      <form id="formAdmin" onsubmit="event.preventDefault(); loginAdmin();">
-        <div class="mb-3">
-          <label for="adminUser" class="form-label">Username Admin</label>
-          <input type="text" id="adminUser" class="form-control" placeholder="Masukkan username" required>
+                    <!-- Tombol Login -->
+                    <div class="d-grid gap-3">
+                        <button class="btn btn-warning py-2 fw-bold text-dark rounded-3 shadow-sm" data-bs-toggle="collapse" data-bs-target="#adminLoginForm">
+                            <i class="bi bi-shield-lock-fill me-2"></i>Login Admin
+                        </button>
+                        
+                        <button onclick="loginPelanggan()" class="btn btn-outline-dark py-2 fw-semibold rounded-3">
+                            <i class="bi bi-person-fill me-2"></i>Masuk Sebagai Pelanggan
+                        </button>
+                    </div>
+
+                    <!-- Form Admin -->
+                    <div class="collapse mt-4" id="adminLoginForm">
+                        <div class="card card-body bg-light border-0 rounded-3 text-start">
+                            <h6 class="fw-bold mb-3 text-dark text-center"><i class="bi bi-key-fill text-warning me-1"></i> Form Administrator</h6>
+                            <form onsubmit="loginAdmin(event)">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-medium text-secondary">Username</label>
+                                    <input type="text" id="admin-username" class="form-control" placeholder="Masukkan username" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-medium text-secondary">Password</label>
+                                    <input type="password" id="admin-password" class="form-control" placeholder="Masukkan password" required>
+                                </div>
+                                <button type="submit" class="btn btn-dark w-100 py-2 fw-bold rounded-3">Masuk Sistem</button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-          <label for="adminPass" class="form-label">Password Admin</label>
-          <input type="password" id="adminPass" class="form-control" placeholder="Masukkan password" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100 mb-2">Login Admin</button>
-      </form>
-
-      <div class="position-relative my-4 text-center">
-        <hr class="text-muted">
-        <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 text-muted small">atau</span>
-      </div>
-
-      <!-- Tombol Masuk Pelanggan -->
-      <button type="button" onclick="masukPelanggan()" class="btn btn-outline-success w-100">
-        Masuk Sebagai Pelanggan
-      </button>
     </div>
-  </div>
 
-  <script src="login.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="login.js"></script>
 </body>
 </html>
