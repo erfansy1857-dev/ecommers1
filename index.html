@@ -15,6 +15,7 @@
             <a href="#" class="nav-item active" onclick="switchCustomerTab(event, 'katalog')">Katalog</a>
             <a href="#" class="nav-item" onclick="switchCustomerTab(event, 'flashsale')">Flash Sale⚡</a>
             <a href="#" class="nav-item" onclick="switchCustomerTab(event, 'keranjang')">Keranjang (<span id="cart-count">0</span>)</a>
+            <a href="#" class="nav-item" onclick="switchCustomerTab(event, 'pesanan-cust')">Pesanan Saya📦</a>
         </nav>
     </header>
 
@@ -22,7 +23,6 @@
 
         <!-- TAB KATALOG -->
         <section id="tab-katalog" class="tab-content">
-            <!-- Pencarian & Filter -->
             <div class="search-filter-box mb-2">
                 <input type="text" id="search-input" class="form-control mb-1" placeholder="Cari nama produk..." oninput="filterProducts()">
                 <div class="category-buttons">
@@ -34,41 +34,30 @@
                 </div>
             </div>
 
-            <!-- Produk Terpopuler (Stok Paling Sedikit) -->
             <div id="section-populer" class="mb-3">
                 <h3 class="text-danger mb-1">🔥 Produk Terpopuler (Stok Terbatas)</h3>
-                <div class="grid-4 gap-2" id="grid-populer">
-                    <!-- Data diisi JS -->
-                </div>
+                <div class="grid-4 gap-2" id="grid-populer"></div>
             </div>
 
             <hr class="mb-2">
 
-            <!-- Semua Produk -->
             <h3>Semua Produk</h3>
-            <div class="grid-4 gap-2 mt-1" id="grid-produk">
-                <!-- Data diisi JS -->
-            </div>
+            <div class="grid-4 gap-2 mt-1" id="grid-produk"></div>
         </section>
 
         <!-- TAB FLASH SALE -->
         <section id="tab-flashsale-cust" class="tab-content hidden">
             <h2 class="text-danger mb-2">⚡ Promo Flash Sale Hari Ini!</h2>
-            <div class="grid-4 gap-2" id="grid-flashsale">
-                <!-- Data diisi JS -->
-            </div>
+            <div class="grid-4 gap-2" id="grid-flashsale"></div>
         </section>
 
         <!-- TAB KERANJANG & CHECKOUT -->
         <section id="tab-keranjang" class="tab-content hidden">
             <h2>Keranjang Belanja</h2>
             <div class="grid-2-custom gap-2 mt-2">
-                <!-- Daftar Item Keranjang -->
                 <div class="card">
                     <h3>Daftar Barang</h3>
-                    <div id="cart-items-list" class="mt-1">
-                        <!-- Items diisi JS -->
-                    </div>
+                    <div id="cart-items-list" class="mt-1"></div>
                     <hr class="mt-2 mb-1">
                     <div class="flex-between">
                         <strong>Total Pembayaran:</strong>
@@ -76,9 +65,8 @@
                     </div>
                 </div>
 
-                <!-- Form Checkout -->
                 <div class="card">
-                    <h3>Data Pengiriman</h3>
+                    <h3>Data Pengiriman & Pembayaran</h3>
                     <form id="form-checkout" onsubmit="handleCheckout(event)" class="mt-1">
                         <div class="form-group mb-1">
                             <label>Nama Lengkap</label>
@@ -90,11 +78,41 @@
                         </div>
                         <div class="form-group mb-1">
                             <label>Alamat Lengkap</label>
-                            <textarea id="cust-alamat" class="form-control" rows="3" placeholder="Jl. Anggrek No. 123..." required></textarea>
+                            <textarea id="cust-alamat" class="form-control" rows="2" placeholder="Jl. Anggrek No. 123..." required></textarea>
+                        </div>
+                        <div class="form-group mb-1">
+                            <label>Metode Pembayaran</label>
+                            <select id="cust-pembayaran" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih Metode Pembayaran --</option>
+                                <option value="Transfer Bank BCA">Transfer Bank BCA</option>
+                                <option value="Transfer Bank BRI/Mandiri">Transfer Bank BRI / Mandiri</option>
+                                <option value="E-Wallet (DANA/OVO/GoPay)">E-Wallet (DANA / OVO / GoPay)</option>
+                                <option value="COD (Bayar di Tempat)">COD (Bayar di Tempat)</option>
+                            </select>
                         </div>
                         <button type="submit" class="btn btn-success btn-block mt-2">Buat Pesanan (Checkout)</button>
                     </form>
                 </div>
+            </div>
+        </section>
+
+        <!-- TAB PESANAN SAYA (CEK STATUS) -->
+        <section id="tab-pesanan-cust" class="tab-content hidden">
+            <h2>Cek Status Pesanan Saya</h2>
+            <p class="text-muted mb-2">Masukkan nomor telepon yang Anda gunakan saat membuat pesanan.</p>
+            
+            <div class="card mb-3">
+                <div class="form-group mb-1">
+                    <label>Nomor Telepon / WhatsApp</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="tel" id="search-phone-input" class="form-control" placeholder="Contoh: 08123456789">
+                        <button type="button" class="btn btn-primary" onclick="searchCustomerOrder()">Cari Pesanan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="customer-orders-container" class="flex-col gap-2">
+                <p class="text-muted text-center">Silakan masukkan nomor telepon di atas untuk menampilkan daftar pesanan Anda.</p>
             </div>
         </section>
 
