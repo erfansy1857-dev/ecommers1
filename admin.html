@@ -3,56 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - ElectroStore</title>
+    <title>Panel Admin - Toko Elektronik</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-dark pb-navbar">
+<body>
 
-    <!-- Header & Navbar Admin -->
-    <header class="top-header">
-        <div class="header-container">
-            <h2 class="brand-logo">📱 Admin<span>Panel</span></h2>
-            <a href="login.html" class="btn btn-sm btn-outline-danger">Logout</a>
-        </div>
-        <!-- Menu Navigation Tabs -->
-        <nav class="tab-nav">
-            <button class="tab-btn active" onclick="openAdminTab('dashboard', this)">Dashboard</button>
-            <button class="tab-btn" onclick="openAdminTab('produk', this)">Produk</button>
-            <button class="tab-btn" onclick="openAdminTab('pesanan', this)">Pesanan</button>
-            <button class="tab-btn" onclick="openAdminTab('flashsale', this)">Flash Sale</button>
-            <button class="tab-btn" onclick="openAdminTab('laporan', this)">Laporan</button>
+    <!-- Header Navbar Admin -->
+    <header class="navbar bg-dark text-white">
+        <div class="logo">Admin Panel</div>
+        <nav class="nav-links">
+            <a href="#" class="nav-item active" onclick="switchAdminTab(event, 'dashboard')">Dashboard</a>
+            <a href="#" class="nav-item" onclick="switchAdminTab(event, 'produk')">Produk</a>
+            <a href="#" class="nav-item" onclick="switchAdminTab(event, 'pesanan')">Pesanan</a>
+            <a href="#" class="nav-item" onclick="switchAdminTab(event, 'flashsale')">Flash Sale</a>
+            <a href="#" class="nav-item" onclick="switchAdminTab(event, 'laporan')">Laporan</a>
+            <a href="#" class="nav-item text-danger" onclick="logoutAdmin()">Logout</a>
         </nav>
     </header>
 
-    <main class="container mt-3">
+    <div class="container mt-3 mb-4">
 
-        <!-- TAB 1: DASHBOARD -->
-        <section id="tab-dashboard" class="tab-content active">
-            <h3 class="section-title">Ringkasan Hari Ini</h3>
-            <div class="grid-cards">
-                <div class="card stat-card">
-                    <h4>Total Produk</h4>
-                    <p id="dashTotalProduk" class="stat-value">0</p>
+        <!-- TAB DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content">
+            <h2>Dashboard</h2>
+            <div class="grid-2 gap-2 mt-2">
+                <div class="card bg-primary text-white text-center">
+                    <h3>Total Produk</h3>
+                    <p class="stat-number" id="dash-total-produk">0</p>
                 </div>
-                <div class="card stat-card">
-                    <h4>Terjual Hari Ini</h4>
-                    <p id="dashTerjualHariIni" class="stat-value">0</p>
-                </div>
-                <div class="card stat-card highlight">
-                    <h4>Pendapatan Hari Ini</h4>
-                    <p id="dashPendapatanHariIni" class="stat-value">Rp 0</p>
+                <div class="card bg-success text-white text-center">
+                    <h3>Terjual Hari Ini</h3>
+                    <p class="stat-number" id="dash-terjual-hari-ini">0</p>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 2: PRODUK -->
-        <section id="tab-produk" class="tab-content">
-            <div class="flex-between mb-3">
-                <h3 class="section-title">Manajemen Produk</h3>
-                <button class="btn btn-primary" onclick="openProductModal()">+ Tambah Produk</button>
+        <!-- TAB PRODUK -->
+        <section id="tab-produk" class="tab-content hidden">
+            <div class="flex-between mb-2">
+                <h2>Kelola Produk</h2>
+                <button type="button" class="btn btn-primary" onclick="openProductModal()">+ Tambah Produk</button>
             </div>
             <div class="table-responsive">
-                <table class="data-table">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>Gambar</th>
@@ -63,187 +56,145 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="adminProductTable">
-                        <!-- Data dikontrol JS -->
+                    <tbody id="table-produk">
+                        <!-- Data diisi JS -->
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- TAB 3: PESANAN -->
-        <section id="tab-pesanan" class="tab-content">
-            <h3 class="section-title">Daftar Pesanan Masuk</h3>
-            <div class="table-responsive">
-                <table class="data-table">
+        <!-- TAB PESANAN -->
+        <section id="tab-pesanan" class="tab-content hidden">
+            <h2>Daftar Pesanan Pelanggan</h2>
+            <div class="table-responsive mt-2">
+                <table class="table">
                     <thead>
                         <tr>
                             <th>Tanggal</th>
-                            <th>Pelanggan</th>
-                            <th>No.Telp / Alamat</th>
-                            <th>Item (Qty)</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminOrderTable">
-                        <!-- Data dikontrol JS -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- TAB 4: FLASH SALE -->
-        <section id="tab-flashsale" class="tab-content">
-            <div class="flex-between mb-3">
-                <h3 class="section-title">Program Flash Sale</h3>
-                <button class="btn btn-accent" onclick="openFlashSaleModal()">+ Tambah Flash Sale</button>
-            </div>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Gambar</th>
-                            <th>Nama Produk</th>
-                            <th>Harga Normal</th>
-                            <th>Diskon</th>
-                            <th>Harga Sale</th>
-                            <th>Berakhir Pada</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminFlashTable">
-                        <!-- Data dikontrol JS -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- TAB 5: LAPORAN -->
-        <section id="tab-laporan" class="tab-content">
-            <h3 class="section-title">Laporan Penjualan</h3>
-            <div class="grid-cards mb-3">
-                <div class="card stat-card">
-                    <h4>Minggu Ini</h4>
-                    <p id="lapMingguIni" class="stat-value">Rp 0</p>
-                </div>
-                <div class="card stat-card">
-                    <h4>Bulan Ini</h4>
-                    <p id="lapBulanIni" class="stat-value">Rp 0</p>
-                </div>
-                <div class="card stat-card highlight">
-                    <h4>Tahun Ini</h4>
-                    <p id="lapTahunIni" class="stat-value">Rp 0</p>
-                </div>
-            </div>
-
-            <h4 class="mb-2">10 Pesanan Terbaru</h4>
-            <div class="table-responsive">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID / Tanggal</th>
                             <th>Nama</th>
+                            <th>No.Telp</th>
+                            <th>Alamat</th>
+                            <th>Daftar Produk</th>
                             <th>Total Bayar</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="adminReportTable">
-                        <!-- Data dikontrol JS -->
+                    <tbody id="table-pesanan">
+                        <!-- Data diisi JS -->
                     </tbody>
                 </table>
             </div>
         </section>
 
-    </main>
+        <!-- TAB FLASH SALE -->
+        <section id="tab-flashsale" class="tab-content hidden">
+            <div class="flex-between mb-2">
+                <h2>Kelola Flash Sale</h2>
+                <button type="button" class="btn btn-warning" onclick="openFlashsaleModal()">+ Tambah Flash Sale</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nama Produk</th>
+                            <th>Harga Asli</th>
+                            <th>Diskon</th>
+                            <th>Harga Diskon</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-flashsale">
+                        <!-- Data diisi JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-    <!-- MODAL FORM PRODUK (TAMBAH / EDIT) -->
-    <div id="productModal" class="modal">
+        <!-- TAB LAPORAN -->
+        <section id="tab-laporan" class="tab-content hidden">
+            <h2>Laporan Penjualan</h2>
+            <div class="grid-3 gap-2 mt-2">
+                <div class="card bg-info text-white text-center">
+                    <h3>Minggu Ini</h3>
+                    <p class="stat-number" id="lap-minggu">Rp 0</p>
+                </div>
+                <div class="card bg-warning text-white text-center">
+                    <h3>Bulan Ini</h3>
+                    <p class="stat-number" id="lap-bulan">Rp 0</p>
+                </div>
+                <div class="card bg-dark text-white text-center">
+                    <h3>Tahun Ini</h3>
+                    <p class="stat-number" id="lap-tahun">Rp 0</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- MODAL FORM PRODUK -->
+    <div id="modal-produk" class="modal hidden">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeProductModal()">&times;</span>
-            <h3 id="productModalTitle">Tambah Produk Baru</h3>
-            <form id="productForm" onsubmit="saveProduct(event)">
-                <input type="hidden" id="prodId">
-                
-                <div class="form-group">
+            <span class="close-btn" onclick="closeProductModal()">&times;</span>
+            <h3 id="modal-produk-title" class="mb-2">Tambah Produk</h3>
+            <form id="form-produk" onsubmit="saveProduct(event)">
+                <input type="hidden" id="prod-id">
+                <div class="form-group mb-1">
                     <label>Nama Produk</label>
-                    <input type="text" id="prodNama" class="form-control" required>
+                    <input type="text" id="prod-nama" class="form-control" placeholder="Nama produk" required>
                 </div>
-                <div class="form-group-row">
-                    <div class="form-group">
-                        <label>Harga (Rp)</label>
-                        <input type="number" id="prodHarga" class="form-control" required min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Stok</label>
-                        <input type="number" id="prodStok" class="form-control" required min="0">
-                    </div>
+                <div class="form-group mb-1">
+                    <label>Harga (Rp)</label>
+                    <input type="number" id="prod-harga" class="form-control" placeholder="Harga" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-1">
+                    <label>Stok</label>
+                    <input type="number" id="prod-stok" class="form-control" placeholder="Jumlah stok" required>
+                </div>
+                <div class="form-group mb-1">
                     <label>Kategori</label>
-                    <select id="prodKategori" class="form-control" required>
+                    <select id="prod-kategori" class="form-control" required>
                         <option value="HP">HP</option>
                         <option value="Laptop">Laptop</option>
                         <option value="TV">TV</option>
                         <option value="Aksesori">Aksesori</option>
-                        <option value="Audio">Audio</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Deskripsi Produk</label>
-                    <textarea id="prodDeskripsi" class="form-control" rows="3" required></textarea>
+                <div class="form-group mb-1">
+                    <label>Link Gambar (URL)</label>
+                    <input type="url" id="prod-gambar" class="form-control" placeholder="https://..." required>
                 </div>
-                <div class="form-group">
-                    <label>Upload Gambar (Galeri)</label>
-                    <input type="file" id="prodImgInput" class="form-control" accept="image/*" onchange="previewBase64('prodImgInput', 'prodImgPreview')">
-                    <input type="hidden" id="prodImgBase64">
-                    <img id="prodImgPreview" class="img-preview hidden mt-2" alt="Preview Gambar">
+                <div class="form-group mb-2">
+                    <label>Link Video Youtube (Opsional)</label>
+                    <input type="url" id="prod-video" class="form-control" placeholder="https://youtube.com/...">
                 </div>
-                <div class="form-group">
-                    <label>Upload Video (Galeri - Opsional)</label>
-                    <input type="file" id="prodVidInput" class="form-control" accept="video/*" onchange="previewBase64('prodVidInput', 'prodVidPreview', true)">
-                    <input type="hidden" id="prodVidBase64">
-                    <video id="prodVidPreview" class="video-preview hidden mt-2" controls></video>
-                </div>
-
                 <button type="submit" class="btn btn-primary btn-block">Simpan Produk</button>
+                <button type="button" class="btn btn-outline btn-block mt-1" onclick="closeProductModal()">Batal</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL FLASH SALE -->
-    <div id="flashModal" class="modal">
+    <!-- MODAL FORM FLASH SALE -->
+    <div id="modal-flashsale" class="modal hidden">
         <div class="modal-content">
-            <span class="close-modal" onclick="closeFlashModal()">&times;</span>
-            <h3>Tambah Produk Flash Sale</h3>
-            <form id="flashForm" onsubmit="saveFlashSale(event)">
-                <div class="form-group">
+            <span class="close-btn" onclick="closeFlashsaleModal()">&times;</span>
+            <h3 class="mb-2">Tambah Flash Sale</h3>
+            <form id="form-flashsale" onsubmit="saveFlashsale(event)">
+                <div class="form-group mb-1">
                     <label>Pilih Produk</label>
-                    <select id="flashProdId" class="form-control" required></select>
+                    <select id="fs-prod-id" class="form-control" required>
+                        <!-- Opsi produk diisi JS -->
+                    </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-2">
                     <label>Diskon (%)</label>
-                    <input type="number" id="flashDiscount" class="form-control" min="1" max="99" required placeholder="Contoh: 20">
+                    <input type="number" id="fs-diskon" class="form-control" min="1" max="99" placeholder="Contoh: 20" required>
                 </div>
-                <div class="form-group">
-                    <label>Waktu Berakhir</label>
-                    <input type="datetime-local" id="flashEndTime" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-accent btn-block">Aktifkan Flash Sale</button>
+                <button type="submit" class="btn btn-warning btn-block">Set Flash Sale</button>
+                <button type="button" class="btn btn-outline btn-block mt-1" onclick="closeFlashsaleModal()">Batal</button>
             </form>
         </div>
     </div>
 
     <script src="js/script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            initDefaultData();
-            renderAdminDashboard();
-            renderAdminProducts();
-            renderAdminOrders();
-            renderAdminFlashSales();
-            renderAdminReports();
-        });
-    </script>
 </body>
 </html>
