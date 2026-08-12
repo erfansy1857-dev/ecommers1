@@ -5,7 +5,16 @@ const getStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
 const setStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 const formatRupiah = (number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(number);
 
-// Inisialisasi Data Awal saat Pertama Buka Aplikasi
+// Helper Warna Badge Status
+function getStatusBadge(status) {
+    let className = "status-baru";
+    if (status === "Diproses") className = "status-diproses";
+    if (status === "Dikirim") className = "status-dikirim";
+    if (status === "Selesai") className = "status-selesai";
+    if (status === "Dibatalkan") className = "status-dibatalkan";
+    return `<span class="badge-status ${className}">${status}</span>`;
+}
+
 function initDefaultData() {
     if (!localStorage.getItem("products")) {
         const defaultProducts = [
@@ -22,11 +31,9 @@ function initDefaultData() {
     if (!localStorage.getItem("cart")) setStorage("cart", []);
 }
 
-// Inisialisasi saat Dokumen Selesai Dimuat
 document.addEventListener("DOMContentLoaded", () => {
     initDefaultData();
     
-    // Halaman Admin
     if (document.getElementById("table-produk")) {
         window.checkAdminSession();
         window.renderAdminDashboard();
@@ -36,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
         window.renderAdminReports();
     }
     
-    // Halaman Toko / Pelanggan
     if (document.getElementById("grid-produk")) {
         window.renderCustomerProducts();
         window.renderCustomerFlashsale();
@@ -99,9 +105,9 @@ window.switchAdminTab = function(e, tabName) {
 
     if (tabName === 'dashboard') window.renderAdminDashboard();
     if (tabName === 'laporan') window.renderAdminReports();
+    if (tabName === 'pesanan') window.renderAdminOrders();
 };
 
-// Modal Produk
 window.openProductModal = function(editId = null) {
     const form = document.getElementById("form-produk");
     if (form) form.reset();
@@ -196,7 +202,6 @@ window.renderAdminProducts = function() {
     });
 };
 
-// Modal Flash Sale
 window.openFlashsaleModal = function() {
     const products = getStorage("products");
     const select = document.getElementById("fs-prod-id");
@@ -266,7 +271,7 @@ window.renderAdminFlashsale = function() {
     });
 };
 
-// Admin Dashboard, Orders & Reports Renderers
+// Admin Render Orders & Update Status
 window.renderAdminOrders = function() {
     const orders = getStorage("orders");
     const tbody = document.getElementById("table-pesanan");
@@ -275,18 +280,43 @@ window.renderAdminOrders = function() {
 
     [...orders].reverse().forEach(o => {
         const itemDetails = o.items.map(i => `${i.nama} (${i.qty}x)`).join(", ");
+        const statusBadge = getStatusBadge(o.status);
+
         tbody.innerHTML += `
             <tr>
                 <td>${o.tanggal}</td>
-                <td><strong>${o.nama}</strong></td>
-                <td>${o.phone}</td>
+                <td><strong>${o.nama}</strong><br><small>${o.phone}</small></td>
                 <td>${o.alamat}</td>
+                <td><span class="btn btn-sm btn-outline">${o.metodeBayar || 'Transfer'}</span></td>
                 <td>${itemDetails}</td>
                 <td><strong>${formatRupiah(o.total)}</strong></td>
-                <td><span class="btn btn-sm btn-success">${o.status}</span></td>
+                <td>${statusBadge}</td>
+                <td>
+                    <select class="form-control" style="font-size:12px; padding:4px;" onchange="updateOrderStatus(${o.id}, this.value)">
+                        <option value="Baru" ${o.status === 'Baru' ? 'selected' : ''}>Baru</option>
+                        <option value="Diproses" ${o.status === 'Diproses' ? 'selected' : ''}>Diproses</option>
+                        <option value="Dikirim" ${o.status === 'Dikirim' ? 'selected' : ''}>Dikirim</option>
+                        <option value="Selesai" ${o.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                        <option value="Dibatalkan" ${o.status === 'Dibatalkan' ? 'selected' : ''}>Dibatalkan</option>
+                    </select>
+                </td>
             </tr>
         `;
     });
+};
+
+window.updateOrderStatus = function(orderId, newStatus) {
+    let orders = getStorage("orders");
+    orders = orders.map(o => {
+        if (o.id === orderId) {
+            o.status = newStatus;
+        }
+        return o;
+    });
+
+    setStorage("orders", orders);
+    window.renderAdminOrders();
+    alert(`Status pesanan berhasil diubah menjadi "${newStatus}"`);
 };
 
 window.renderAdminDashboard = function() {
@@ -299,7 +329,7 @@ window.renderAdminDashboard = function() {
 
     let totalTerjualHariIni = 0;
     orders.forEach(o => {
-        if (o.tanggal === todayStr) {
+        if (o.tanggal === todayStr && o.status !== "Dibatalkan") {
             o.items.forEach(i => totalTerjualHariIni += i.qty);
         }
     });
@@ -315,6 +345,7 @@ window.renderAdminReports = function() {
     let mIngguIni = 0, bulanIni = 0, tahunIni = 0;
 
     orders.forEach(o => {
+        if (o.status === "Dibatalkan") return;
         const oDate = new Date(o.tanggal);
         const diffDays = (now - oDate) / (1000 * 60 * 60 * 24);
 
@@ -362,7 +393,6 @@ window.renderCustomerProducts = function() {
     const flashsales = getStorage("flashsales");
     const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value.toLowerCase() : "";
 
-    // 1. Render Populer (4 Stok Terkecil)
     const sortedByStock = [...products].sort((a, b) => a.stok - b.stok).slice(0, 4);
     const gridPopuler = document.getElementById("grid-populer");
     if (gridPopuler) {
@@ -370,7 +400,6 @@ window.renderCustomerProducts = function() {
         sortedByStock.forEach(p => gridPopuler.appendChild(createProductCard(p, flashsales)));
     }
 
-    // 2. Render Katalog Produk
     const gridProduk = document.getElementById("grid-produk");
     if (gridProduk) {
         gridProduk.innerHTML = "";
@@ -436,7 +465,7 @@ window.renderCustomerFlashsale = function() {
     });
 };
 
-// Cart & Checkout
+// Cart, Checkout & Customer Order Search
 window.addToCart = function(productId) {
     let cart = getStorage("cart");
     const products = getStorage("products");
@@ -554,6 +583,16 @@ window.handleCheckout = function(e) {
         return;
     }
 
+    const nama = document.getElementById("cust-nama").value;
+    const phone = document.getElementById("cust-phone").value;
+    const alamat = document.getElementById("cust-alamat").value;
+    const metodeBayar = document.getElementById("cust-pembayaran").value;
+
+    if (!metodeBayar) {
+        alert("Silakan pilih metode pembayaran!");
+        return;
+    }
+
     let orderItems = [];
     let totalBayar = 0;
 
@@ -582,9 +621,10 @@ window.handleCheckout = function(e) {
     const newOrder = {
         id: Date.now(),
         tanggal: new Date().toISOString().split('T')[0],
-        nama: document.getElementById("cust-nama").value,
-        phone: document.getElementById("cust-phone").value,
-        alamat: document.getElementById("cust-alamat").value,
+        nama: nama,
+        phone: phone,
+        alamat: alamat,
+        metodeBayar: metodeBayar,
         items: orderItems,
         total: totalBayar,
         status: "Baru"
@@ -597,12 +637,71 @@ window.handleCheckout = function(e) {
     setStorage("products", products);
     setStorage("cart", []);
 
-    alert("Pesanan Berhasil!");
+    alert(`Pesanan Berhasil dibuat!\nNomor Telepon: ${phone}\nMetode Pembayaran: ${metodeBayar}`);
     document.getElementById("form-checkout").reset();
     window.renderCart();
+    
+    // Otomatis arahkan dan tampilkan pesanan pelanggan
+    const searchInput = document.getElementById("search-phone-input");
+    if (searchInput) searchInput.value = phone;
+    window.switchCustomerTab(null, "pesanan-cust");
+    window.searchCustomerOrder();
 };
 
-// Listener global untuk menutup modal saat klik di luar kotak modal (backdrop click)
+// Fitur Cari Status Pesanan Pelanggan
+window.searchCustomerOrder = function() {
+    const phoneInput = document.getElementById("search-phone-input").value.trim();
+    const container = document.getElementById("customer-orders-container");
+    if (!container) return;
+
+    if (!phoneInput) {
+        alert("Masukkan nomor telepon terlebih dahulu!");
+        return;
+    }
+
+    const orders = getStorage("orders");
+    const userOrders = orders.filter(o => o.phone === phoneInput);
+
+    container.innerHTML = "";
+
+    if (userOrders.length === 0) {
+        container.innerHTML = `<p class="text-muted text-center card">Tidak ada pesanan yang ditemukan untuk nomor <strong>${phoneInput}</strong>.</p>`;
+        return;
+    }
+
+    [...userOrders].reverse().forEach(o => {
+        const itemDetailsHtml = o.items.map(i => `
+            <div class="flex-between mt-1">
+                <span>${i.nama} (x${i.qty})</span>
+                <span>${formatRupiah(i.harga * i.qty)}</span>
+            </div>
+        `).join("");
+
+        container.innerHTML += `
+            <div class="card mb-2">
+                <div class="flex-between mb-1" style="border-bottom:1px solid #e2e8f0; padding-bottom:8px;">
+                    <div>
+                        <strong>ID Pesanan: #${o.id}</strong><br>
+                        <small class="text-muted">Tanggal: ${o.tanggal}</small>
+                    </div>
+                    <div>${getStatusBadge(o.status)}</div>
+                </div>
+                <p><strong>Penerima:</strong> ${o.nama} (${o.phone})</p>
+                <p><strong>Alamat:</strong> ${o.alamat}</p>
+                <p><strong>Metode Pembayaran:</strong> <span class="text-primary">${o.metodeBayar || 'Transfer'}</span></p>
+                <hr class="mt-1 mb-1">
+                <strong>Detail Barang:</strong>
+                ${itemDetailsHtml}
+                <hr class="mt-1 mb-1">
+                <div class="flex-between mt-1">
+                    <strong>Total Tagihan:</strong>
+                    <strong class="text-primary fs-large">${formatRupiah(o.total)}</strong>
+                </div>
+            </div>
+        `;
+    });
+};
+
 window.addEventListener("click", function(event) {
     const modalProd = document.getElementById("modal-produk");
     const modalFS = document.getElementById("modal-flashsale");
