@@ -1,91 +1,87 @@
-/* Custom CSS untuk Tampilan Tambahan */
+/* =========================================================
+   STYLE UTAMA - ELEKTRONIK STORE
+   Warna Utama: Kuning (#FFC107) & Hitam (#212529)
+   Font: Poppins (Google Fonts)
+   ========================================================= */
+
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
 }
 
-main {
-  flex: 1;
+/* Navbar Custom */
+.navbar {
+    background-color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-/* Navbar Mengambang (Floating Navbar) */
-.floating-nav {
-  position: sticky;
-  top: 15px;
-  z-index: 1030;
-  width: 92%;
-  max-width: 1200px;
-  margin: 15px auto 25px auto;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+.navbar-brand {
+    font-weight: 700;
+    color: #212529 !important;
 }
 
-/* Responsif Navbar Mengambang di HP */
-@media (max-width: 576px) {
-  .floating-nav {
-    width: 95%;
-    top: 10px;
-    margin: 10px auto 20px auto;
-    border-radius: 12px;
-  }
+.nav-link {
+    font-weight: 500;
+    color: #495057 !important;
+    transition: all 0.3s ease;
 }
 
-/* Card Styling */
+.nav-link:hover, .nav-link.active {
+    color: #ffc107 !important;
+}
+
+/* Custom Cards */
 .card {
-  border: none;
-  border-radius: 12px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 16px !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08) !important;
+.product-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.12) !important;
 }
 
-.card-img-top {
-  height: 200px;
-  object-fit: cover;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
+.product-img {
+    height: 180px;
+    object-fit: cover;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    cursor: pointer;
 }
 
-/* Flash Sale Badge & Price */
-.badge-flash {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #dc3545;
-  color: white;
-  font-weight: bold;
-  padding: 5px 10px;
-  border-radius: 20px;
+/* Custom Buttons */
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
 }
 
-.price-old {
-  text-decoration: line-through;
-  color: #6c757d;
-  font-size: 0.9rem;
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #e0a800;
+    color: #212529;
 }
 
-.price-new {
-  color: #dc3545;
-  font-weight: bold;
-  font-size: 1.2rem;
+/* Background Page Login */
+.bg-login {
+    background: linear-gradient(135deg, #212529 0%, #343a40 100%);
 }
 
-/* Login Box */
-.login-container {
-  max-width: 420px;
-  margin: 80px auto;
+/* Offset Scroll Nav Sticky */
+.anchor-offset {
+    scroll-margin-top: 80px;
 }
 
-/* Navigation Active State */
-.nav-link.active {
-  font-weight: bold;
-  border-bottom: 2px solid #ffffff;
+/* Responsif Mobile */
+@media (max-width: 576px) {
+    .product-img {
+        height: 130px;
+    }
+    .card-body {
+        padding: 0.75rem !important;
+    }
+    h3 {
+        font-size: 1.5rem;
+    }
 }
