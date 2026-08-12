@@ -8,7 +8,6 @@
 </head>
 <body>
 
-    <!-- Header Navbar Admin -->
     <header class="navbar bg-dark text-white">
         <div class="logo">Admin Panel</div>
         <nav class="nav-links">
@@ -23,7 +22,6 @@
 
     <div class="container mt-3 mb-4">
 
-        <!-- TAB DASHBOARD -->
         <section id="tab-dashboard" class="tab-content">
             <h2>Dashboard</h2>
             <div class="grid-2 gap-2 mt-2">
@@ -38,7 +36,6 @@
             </div>
         </section>
 
-        <!-- TAB PRODUK -->
         <section id="tab-produk" class="tab-content hidden">
             <div class="flex-between mb-2">
                 <h2>Kelola Produk</h2>
@@ -56,14 +53,12 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="table-produk">
-                        <!-- Data diisi JS -->
-                    </tbody>
+                    <tbody id="table-produk"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- TAB PESANAN -->
+        <!-- TAB PESANAN ADMIN -->
         <section id="tab-pesanan" class="tab-content hidden">
             <h2>Daftar Pesanan Pelanggan</h2>
             <div class="table-responsive mt-2">
@@ -71,22 +66,20 @@
                     <thead>
                         <tr>
                             <th>Tanggal</th>
-                            <th>Nama</th>
-                            <th>No.Telp</th>
+                            <th>Nama & Telp</th>
                             <th>Alamat</th>
+                            <th>Metode Bayar</th>
                             <th>Daftar Produk</th>
                             <th>Total Bayar</th>
-                            <th>Status</th>
+                            <th>Status Saat Ini</th>
+                            <th>Ubah Status</th>
                         </tr>
                     </thead>
-                    <tbody id="table-pesanan">
-                        <!-- Data diisi JS -->
-                    </tbody>
+                    <tbody id="table-pesanan"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- TAB FLASH SALE -->
         <section id="tab-flashsale" class="tab-content hidden">
             <div class="flex-between mb-2">
                 <h2>Kelola Flash Sale</h2>
@@ -103,14 +96,11 @@
                             <th>Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="table-flashsale">
-                        <!-- Data diisi JS -->
-                    </tbody>
+                    <tbody id="table-flashsale"></tbody>
                 </table>
             </div>
         </section>
 
-        <!-- TAB LAPORAN -->
         <section id="tab-laporan" class="tab-content hidden">
             <h2>Laporan Penjualan</h2>
             <div class="grid-3 gap-2 mt-2">
@@ -181,9 +171,7 @@
             <form id="form-flashsale" onsubmit="saveFlashsale(event)">
                 <div class="form-group mb-1">
                     <label>Pilih Produk</label>
-                    <select id="fs-prod-id" class="form-control" required>
-                        <!-- Opsi produk diisi JS -->
-                    </select>
+                    <select id="fs-prod-id" class="form-control" required></select>
                 </div>
                 <div class="form-group mb-2">
                     <label>Diskon (%)</label>
