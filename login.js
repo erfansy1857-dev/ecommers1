@@ -8,7 +8,7 @@ function loginAdmin(event) {
     const user = document.getElementById("admin-username").value.trim();
     const pass = document.getElementById("admin-password").value.trim();
 
-    if (user === "admin" && pass === "12345") {
+    if (user === "admin" && pass === "123") {
         localStorage.setItem("isAdmin", "true");
         alert("Login Admin Berhasil!");
         window.location.href = "admin.html";
