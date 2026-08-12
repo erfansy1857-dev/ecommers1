@@ -171,58 +171,90 @@
     </section>
 
   </main>
+<!-- MODAL TAMBAH / EDIT PRODUK -->
+<div class="modal fade" id="modalProduk" tabindex="-1" aria-labelledby="modalProdukLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalProdukLabel">Tambah Produk</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="formProduk" onsubmit="simpanProduk(event)">
+        <div class="modal-body">
+          <input type="hidden" id="prodIndex">
 
-  <!-- MODAL TAMBAH / EDIT PRODUK -->
-  <div class="modal fade" id="modalProduk" tabindex="-1" aria-labelledby="modalProdukLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="modalProdukLabel">Tambah Produk</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <form id="formProduk" onsubmit="simpanProduk(event)">
-          <div class="modal-body">
-            <input type="hidden" id="prodIndex">
-
-            <div class="mb-3">
+          <div class="row">
+            <!-- Nama Produk -->
+            <div class="col-md-6 mb-3">
               <label for="prodNama" class="form-label fw-semibold">Nama Produk</label>
               <input type="text" class="form-control" id="prodNama" placeholder="Contoh: Sepatu Sneaker" required>
             </div>
 
-            <div class="mb-3">
+            <!-- Kategori -->
+            <div class="col-md-6 mb-3">
               <label for="prodKategori" class="form-label fw-semibold">Kategori</label>
               <input type="text" class="form-control" id="prodKategori" placeholder="Contoh: Pakaian / Elektronik" required>
             </div>
 
-            <div class="mb-3">
+            <!-- Harga -->
+            <div class="col-md-6 mb-3">
               <label for="prodHarga" class="form-label fw-semibold">Harga (Rp)</label>
               <input type="number" class="form-control" id="prodHarga" placeholder="150000" min="0" required>
             </div>
 
-            <div class="mb-3">
+            <!-- Stok -->
+            <div class="col-md-6 mb-3">
               <label for="prodStok" class="form-label fw-semibold">Stok</label>
               <input type="number" class="form-control" id="prodStok" placeholder="10" min="0" required>
             </div>
+          </div>
 
-            <div class="mb-3">
-              <label for="prodGambarFile" class="form-label fw-semibold">Pilih Gambar dari Galeri</label>
-              <input type="file" class="form-control" id="prodGambarFile" accept="image/*" onchange="previewGambarGaleri(event)">
+          <!-- Deskripsi Produk -->
+          <div class="mb-3">
+            <label for="prodDeskripsi" class="form-label fw-semibold">Deskripsi Produk</label>
+            <textarea class="form-control" id="prodDeskripsi" rows="3" placeholder="Tuliskan detail, spesifikasi, atau keunggulan produk..."></textarea>
+          </div>
 
-              <!-- Container Pratinjau Gambar -->
-              <div class="mt-2 text-center">
-                <img id="prodGambarPreview" src="#" alt="Preview Gambar" class="img-thumbnail d-none" style="max-height: 180px;">
-              </div>
+          <!-- Upload Gambar Galeri -->
+          <div class="mb-3">
+            <label for="prodGambarFile" class="form-label fw-semibold">Gambar Produk (Upload Galeri)</label>
+            <input type="file" class="form-control" id="prodGambarFile" accept="image/*" onchange="previewGambarGaleri(event)">
+            <div class="mt-2 text-center">
+              <img id="prodGambarPreview" src="#" alt="Preview Gambar" class="img-thumbnail d-none" style="max-height: 150px;">
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan Produk</button>
+
+          <!-- Upload / Link Video Produk -->
+          <div class="mb-3 card p-3 bg-light border-0">
+            <label class="form-label fw-bold text-dark mb-1">Video Produk (Opsional)</label>
+            <small class="text-muted mb-2">Pilih salah satu: Upload file video dari galeri HP/Komputer ATAU masukkan link Youtube/Video.</small>
+            
+            <div class="row g-2">
+              <div class="col-md-6">
+                <label for="prodVideoFile" class="form-label small fw-semibold">Upload File Video (MP4/WebM)</label>
+                <input type="file" class="form-control form-control-sm" id="prodVideoFile" accept="video/*" onchange="previewVideoGaleri(event)">
+              </div>
+              <div class="col-md-6">
+                <label for="prodVideoUrl" class="form-label small fw-semibold">Atau Link Video (Youtube/URL)</label>
+                <input type="url" class="form-control form-control-sm" id="prodVideoUrl" placeholder="https://youtube.com/watch?v=...">
+              </div>
+            </div>
+
+            <!-- Preview Video -->
+            <div class="mt-2 text-center">
+              <video id="prodVideoPreview" controls class="w-100 rounded d-none" style="max-height: 200px;"></video>
+            </div>
           </div>
-        </form>
-      </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Produk</button>
+        </div>
+      </form>
     </div>
   </div>
-
+</div>
   <!-- Library External & Custom JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
