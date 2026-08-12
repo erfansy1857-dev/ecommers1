@@ -1,429 +1,315 @@
-// ==========================================
-// 1. PROTEKSI HALAMAN ADMIN
-// ==========================================
-if (!localStorage.getItem('userLoggedIn') || localStorage.getItem('isAdmin') !== 'true') {
-  alert('Akses ditolak! Halaman ini khusus untuk Admin.');
-  window.location.href = 'login.html';
+/* =========================================================
+   SCRIPT UNTUK HALAMAN PELANGGAN (index.html)
+   ========================================================= */
+
+// Redirect ke login.html jika belum set status login
+if (localStorage.getItem("isAdmin") === null) {
+    window.location.href = "login.html";
 }
 
-// ==========================================
-// 2. LOAD DATA DARI LOCAL STORAGE
-// ==========================================
-let produkList = JSON.parse(localStorage.getItem('produk')) || [];
-let pesananList = JSON.parse(localStorage.getItem('pesanan')) || [];
-let flashSaleList = JSON.parse(localStorage.getItem('flashsale')) || [];
-
-let modalProdukInstance = null;
-let chartPendapatanInstance = null;
-let imageBase64Temp = ''; // Menyimpan string gambar Base64 dari file upload
-
-document.addEventListener('DOMContentLoaded', () => {
-  modalProdukInstance = new bootstrap.Modal(document.getElementById('modalProduk'));
-  renderDashboard();
-  renderProdukTable();
-});
-
-function syncData() {
-  localStorage.setItem('produk', JSON.stringify(produkList));
-  localStorage.setItem('pesanan', JSON.stringify(pesananList));
-  localStorage.setItem('flashsale', JSON.stringify(flashSaleList));
-}
-
-// ==========================================
-// 3. NAVIGASI SEKSI ADMIN
-// ==========================================
-function showAdminSection(section) {
-  // Daftar Seksi & Nav Link
-  const sections = ['dashboard', 'produk', 'pesanan', 'flashsale', 'laporan'];
-
-  sections.forEach(sec => {
-    const secEl = document.getElementById(`adm-sec-${sec}`);
-    const navEl = document.getElementById(`adm-${sec === 'dashboard' ? 'dash' : sec === 'produk' ? 'prod' : sec === 'pesanan' ? 'pesan' : sec === 'flashsale' ? 'flash' : 'lapor'}-link`);
-
-    if (secEl) secEl.classList.add('d-none');
-    if (navEl) navEl.classList.remove('active');
-  });
-
-  // Tampilkan seksi yang dipilih
-  const activeSec = document.getElementById(`adm-sec-${section}`);
-  const activeNav = document.getElementById(`adm-${section === 'dashboard' ? 'dash' : section === 'produk' ? 'prod' : section === 'pesanan' ? 'pesan' : section === 'flashsale' ? 'flash' : 'lapor'}-link`);
-
-  if (activeSec) activeSec.classList.remove('d-none');
-  if (activeNav) activeNav.classList.add('active');
-
-  // Load data sesuai seksi
-  if (section === 'dashboard') renderDashboard();
-  if (section === 'produk') renderProdukTable();
-  if (section === 'pesanan') renderPesananTable();
-  if (section === 'flashsale') renderFlashTable();
-  if (section === 'laporan') renderLaporanAndChart();
-}
-
-// ==========================================
-// 4. RINGKASAN DASHBOARD
-// ==========================================
-function renderDashboard() {
-  document.getElementById('dashTotalProduk').innerText = produkList.length;
-
-  // Hitung Pesanan Hari Ini
-  const hariIni = new Date().toISOString().split('T')[0];
-  const pesananHariIni = pesananList.filter(p => {
-    if (!p.tanggal) return false;
-    const tglPesanan = new Date(p.tanggal).toISOString().split('T')[0];
-    return tglPesanan === hariIni;
-  });
-
-  document.getElementById('dashPesananHariIni').innerText = pesananHariIni.length;
-}
-
-// ==========================================
-// 5. MANAJEMEN PRODUK (CRUD)
-// ==========================================
-function renderProdukTable() {
-  const tbody = document.getElementById('adminProdukTable');
-  tbody.innerHTML = '';
-
-  if (produkList.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-3">Belum ada produk.</td></tr>';
-    return;
-  }
-
-  produkList.forEach((p, idx) => {
-    const imgSrc = p.gambar || 'https://via.placeholder.com/50';
-    tbody.innerHTML += `
-      <tr>
-        <td>
-          <img src="${imgSrc}" alt="${p.nama}" width="50" height="50" class="rounded object-fit-cover">
-        </td>
-        <td class="fw-semibold">${p.nama}</td>
-        <td><span class="badge bg-secondary">${p.kategori}</span></td>
-        <td>Rp ${parseInt(p.harga || 0).toLocaleString('id-ID')}</td>
-        <td>${p.stok}</td>
-        <td class="text-end">
-          <button onclick="editProduk(${idx})" class="btn btn-sm btn-warning me-1">Edit</button>
-          <button onclick="hapusProduk(${idx})" class="btn btn-sm btn-danger">Hapus</button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-// Preview gambar saat upload dari HP/Galeri Komputer
-function previewGambarGaleri(event) {
-  const file = event.target.files[0];
-  const previewImg = document.getElementById('prodGambarPreview');
-
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      imageBase64Temp = e.target.result;
-      previewImg.src = imageBase64Temp;
-      previewImg.classList.remove('d-none');
-    };
-    reader.readAsDataURL(file);
-  }
-}
-
-function bukaModalProduk() {
-  document.getElementById('formProduk').reset();
-  document.getElementById('prodIndex').value = '';
-  document.getElementById('prodGambarPreview').classList.add('d-none');
-  document.getElementById('prodGambarPreview').src = '#';
-  document.getElementById('modalProdukLabel').innerText = 'Tambah Produk';
-  imageBase64Temp = '';
-  modalProdukInstance.show();
-}
-
-function simpanProduk(e) {
-  e.preventDefault();
-
-  const index = document.getElementById('prodIndex').value;
-  const nama = document.getElementById('prodNama').value.trim();
-  const kategori = document.getElementById('prodKategori').value.trim();
-  const harga = parseInt(document.getElementById('prodHarga').value);
-  const stok = parseInt(document.getElementById('prodStok').value);
-
-  let gambarFinal = imageBase64Temp;
-
-  if (index !== '') {
-    // Mode Edit
-    const idx = parseInt(index);
-    if (!gambarFinal) {
-      gambarFinal = produkList[idx].gambar; // Tetap pakai gambar lama jika tidak diubah
-    }
-    produkList[idx] = { id: produkList[idx].id || Date.now(), nama, kategori, harga, stok, gambar: gambarFinal };
-  } else {
-    // Mode Tambah
-    if (!gambarFinal) {
-      gambarFinal = 'https://via.placeholder.com/150'; // Default jika tidak pilih gambar
-    }
-    produkList.push({ id: Date.now(), nama, kategori, harga, stok, gambar: gambarFinal });
-  }
-
-  syncData();
-  modalProdukInstance.hide();
-  renderProdukTable();
-  renderDashboard();
-  alert('Data produk berhasil disimpan!');
-}
-
-function editProduk(index) {
-  const p = produkList[index];
-  if (!p) return;
-
-  document.getElementById('prodIndex').value = index;
-  document.getElementById('prodNama').value = p.nama;
-  document.getElementById('prodKategori').value = p.kategori;
-  document.getElementById('prodHarga').value = p.harga;
-  document.getElementById('prodStok').value = p.stok;
-
-  const previewImg = document.getElementById('prodGambarPreview');
-  if (p.gambar) {
-    previewImg.src = p.gambar;
-    previewImg.classList.remove('d-none');
-    imageBase64Temp = p.gambar;
-  } else {
-    previewImg.classList.add('d-none');
-    imageBase64Temp = '';
-  }
-
-  document.getElementById('modalProdukLabel').innerText = 'Edit Produk';
-  modalProdukInstance.show();
-}
-
-function hapusProduk(index) {
-  if (confirm('Yakin ingin menghapus produk ini?')) {
-    produkList.splice(index, 1);
-    syncData();
-    renderProdukTable();
-    renderDashboard();
-  }
-}
-
-// ==========================================
-// 6. DAFTAR PESANAN
-// ==========================================
-function renderPesananTable() {
-  const tbody = document.getElementById('adminPesananTable');
-  tbody.innerHTML = '';
-
-  if (pesananList.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Belum ada pesanan masuk.</td></tr>';
-    return;
-  }
-
-  pesananList.forEach(p => {
-    const tglStr = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-';
-    
-    // Penanganan tampilan daftar barang
-    let barangStr = '-';
-    if (Array.isArray(p.items)) {
-      barangStr = p.items.map(item => `${item.nama} (${item.qty || 1}x)`).join(', ');
-    } else if (p.barang) {
-      barangStr = p.barang;
-    }
-
-    tbody.innerHTML += `
-      <tr>
-        <td><small>${tglStr}</small></td>
-        <td class="fw-semibold">${p.nama || '-'}</td>
-        <td>${p.telepon || p.noTelp || '-'}</td>
-        <td><small>${p.alamat || '-'}</small></td>
-        <td><small>${barangStr}</small></td>
-        <td><span class="badge bg-info text-dark">${p.pembayaran || p.metodePembayaran || 'Transfer'}</span></td>
-        <td class="fw-bold text-success">Rp ${parseInt(p.totalHarga || 0).toLocaleString('id-ID')}</td>
-      </tr>
-    `;
-  });
-}
-
-// ==========================================
-// 7. MANAJEMEN FLASH SALE
-// ==========================================
-function renderFlashTable() {
-  const tbody = document.getElementById('adminFlashTable');
-  tbody.innerHTML = '';
-
-  if (flashSaleList.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">Belum ada produk Flash Sale.</td></tr>';
-    return;
-  }
-
-  flashSaleList.forEach((fs, idx) => {
-    const hargaAsli = parseInt(fs.hargaAsli || fs.harga || 0);
-    const diskon = parseInt(fs.diskon || 0);
-    const hargaDiskon = hargaAsli - (hargaAsli * (diskon / 100));
-
-    tbody.innerHTML += `
-      <tr>
-        <td class="fw-semibold">${fs.nama}</td>
-        <td class="text-muted text-decoration-line-through">Rp ${hargaAsli.toLocaleString('id-ID')}</td>
-        <td><span class="badge bg-danger">-${diskon}%</span></td>
-        <td class="fw-bold text-danger">Rp ${hargaDiskon.toLocaleString('id-ID')}</td>
-        <td class="text-end">
-          <button onclick="hapusFlashSale(${idx})" class="btn btn-sm btn-outline-danger">Hapus</button>
-        </td>
-      </tr>
-    `;
-  });
-}
-
-function tambahFlashSalePrompt() {
-  if (produkList.length === 0) {
-    alert('Tambah produk terlebih dahulu di menu Produk!');
-    return;
-  }
-
-  let pesanOpsi = "Pilih nomor produk yang ingin dijadikan Flash Sale:\n\n";
-  produkList.forEach((p, i) => {
-    pesanOpsi += `${i + 1}. ${p.nama} (Rp ${parseInt(p.harga).toLocaleString('id-ID')})\n`;
-  });
-
-  const pilihan = prompt(pesanOpsi);
-  if (!pilihan) return;
-
-  const idxProduk = parseInt(pilihan) - 1;
-  if (isNaN(idxProduk) || idxProduk < 0 || idxProduk >= produkList.length) {
-    alert('Nomor produk tidak valid!');
-    return;
-  }
-
-  const diskonStr = prompt('Masukkan persentase diskon (1-99%):', '20');
-  if (!diskonStr) return;
-
-  const diskon = parseInt(diskonStr);
-  if (isNaN(diskon) || diskon <= 0 || diskon >= 100) {
-    alert('Persentase diskon tidak valid!');
-    return;
-  }
-
-  const prodSelected = produkList[idxProduk];
-  flashSaleList.push({
-    produkId: prodSelected.id,
-    nama: prodSelected.nama,
-    hargaAsli: prodSelected.harga,
-    diskon: diskon
-  });
-
-  syncData();
-  renderFlashTable();
-  alert('Produk berhasil ditambahkan ke Flash Sale!');
-}
-
-function hapusFlashSale(index) {
-  if (confirm('Hapus produk ini dari Flash Sale?')) {
-    flashSaleList.splice(index, 1);
-    syncData();
-    renderFlashTable();
-  }
-}
-
-// ==========================================
-// 8. REKAP LAPORAN & GRAFIK (CHART.JS)
-// ==========================================
-function renderLaporanAndChart() {
-  const sekarang = new Date();
-
-  let totalMinggu = 0;
-  let totalBulan = 0;
-  let totalTahun = 0;
-  let totalSemua = 0;
-
-  // Objek untuk grafik harian (7 hari terakhir)
-  const data7Hari = {};
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(sekarang.getDate() - i);
-    const key = d.toISOString().split('T')[0];
-    data7Hari[key] = 0;
-  }
-
-  pesananList.forEach(p => {
-    if (!p.tanggal) return;
-    const tgl = new Date(p.tanggal);
-    const nominal = parseInt(p.totalHarga || 0);
-
-    totalSemua += nominal;
-
-    // Cek Tahun Ini
-    if (tgl.getFullYear() === sekarang.getFullYear()) {
-      totalTahun += nominal;
-
-      // Cek Bulan Ini
-      if (tgl.getMonth() === sekarang.getMonth()) {
-        totalBulan += nominal;
-      }
-    }
-
-    // Cek Minggu Ini (7 Hari Terakhir)
-    const selisihHari = (sekarang - tgl) / (1000 * 60 * 60 * 24);
-    if (selisihHari >= 0 && selisihHari <= 7) {
-      totalMinggu += nominal;
-    }
-
-    // Data Grafik
-    const keyTgl = tgl.toISOString().split('T')[0];
-    if (data7Hari[keyTgl] !== undefined) {
-      data7Hari[keyTgl] += nominal;
-    }
-  });
-
-  // Display ke Card Laporan
-  document.getElementById('lapMinggu').innerText = `Rp ${totalMinggu.toLocaleString('id-ID')}`;
-  document.getElementById('lapBulan').innerText = `Rp ${totalBulan.toLocaleString('id-ID')}`;
-  document.getElementById('lapTahun').innerText = `Rp ${totalTahun.toLocaleString('id-ID')}`;
-  document.getElementById('lapTotal').innerText = `Rp ${totalSemua.toLocaleString('id-ID')}`;
-
-  // Render Chart.js
-  const ctx = document.getElementById('grafikPendapatan').getContext('2d');
-  const labels = Object.keys(data7Hari).map(tgl => {
-    const d = new Date(tgl);
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-  });
-  const values = Object.values(data7Hari);
-
-  if (chartPendapatanInstance) {
-    chartPendapatanInstance.destroy();
-  }
-
-  chartPendapatanInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'Pendapatan (Rp)',
-        data: values,
-        borderColor: '#0d6efd',
-        backgroundColor: 'rgba(13, 110, 253, 0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 5
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: function(value) {
-              return 'Rp ' + value.toLocaleString('id-ID');
+// Inisialisasi Data Default jika localStorage masih kosong
+function initDefaultData() {
+    if (!localStorage.getItem("produk")) {
+        const defaultProduk = [
+            {
+                id: 1,
+                nama: "Smartphone Flagship X",
+                harga: 12000000,
+                stok: 15,
+                kategori: "Smartphone",
+                gambar: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
+                video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                deskripsi: "Smartphone dengan kamera kelas profesional 108MP, layar AMOLED 120Hz."
+            },
+            {
+                id: 2,
+                nama: "Laptop Pro 15 Inch",
+                harga: 18500000,
+                stok: 8,
+                kategori: "Laptop",
+                gambar: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=600&q=80",
+                video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                deskripsi: "Laptop performa tinggi cocok untuk desainer dan programmer."
+            },
+            {
+                id: 3,
+                nama: "Wireless Headphone ANC",
+                harga: 2500000,
+                stok: 25,
+                kategori: "Aksesoris",
+                gambar: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
+                video: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                deskripsi: "Headphone nirkabel dengan Active Noise Cancelling dan daya tahan baterai 30 jam."
             }
-          }
-        }
-      }
+        ];
+        localStorage.setItem("produk", JSON.stringify(defaultProduk));
     }
-  });
+
+    if (!localStorage.getItem("keranjang")) localStorage.setItem("keranjang", JSON.stringify([]));
+    if (!localStorage.getItem("pesanan")) localStorage.setItem("pesanan", JSON.stringify([]));
+    if (!localStorage.getItem("flashsale")) {
+        localStorage.setItem("flashsale", JSON.stringify([{ produkId: 3, diskonPercent: 20 }]));
+    }
 }
 
-// ==========================================
-// 9. LOGOUT
-// ==========================================
-function logoutAdmin() {
-  localStorage.removeItem('userLoggedIn');
-  localStorage.removeItem('isAdmin');
-  window.location.href = 'login.html';
+initDefaultData();
+
+function formatRupiah(angka) {
+    return "Rp " + Number(angka).toLocaleString("id-ID");
 }
+
+// 1. DASHBOARD: Render Produk
+function renderProducts() {
+    const produkList = JSON.parse(localStorage.getItem("produk")) || [];
+    const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value.toLowerCase() : "";
+    const filterCat = document.getElementById("filter-kategori") ? document.getElementById("filter-kategori").value : "";
+
+    let filtered = produkList.filter(p => {
+        const matchSearch = p.nama.toLowerCase().includes(searchVal);
+        const matchCat = filterCat === "" || p.kategori === filterCat;
+        return matchSearch && matchCat;
+    });
+
+    let isDefaultView = searchVal === "" && filterCat === "";
+    let displayList = isDefaultView ? filtered.slice(0, 4) : filtered;
+
+    const countLabel = document.getElementById("product-count-label");
+    if (countLabel) {
+        countLabel.innerText = isDefaultView ? `Menampilkan 4 produk populer` : `Menemukan ${displayList.length} produk`;
+    }
+
+    const container = document.getElementById("produk-list");
+    if (!container) return;
+
+    if (displayList.length === 0) {
+        container.innerHTML = `<div class="col-12 text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Produk tidak ditemukan.</div>`;
+        return;
+    }
+
+    container.innerHTML = displayList.map(p => `
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card h-100 product-card shadow-sm border-0">
+                <img src="${p.gambar}" class="card-img-top product-img" alt="${p.nama}" onclick="openProductModal(${p.id})">
+                <div class="card-body d-flex flex-column p-3">
+                    <span class="badge bg-secondary mb-2 align-self-start font-weight-normal">${p.kategori}</span>
+                    <h6 class="card-title fw-bold text-dark mb-1 text-truncate" onclick="openProductModal(${p.id})" style="cursor:pointer;">${p.nama}</h6>
+                    <p class="text-warning fw-bold fs-6 mb-2">${formatRupiah(p.harga)}</p>
+                    <p class="text-muted small mb-3">Stok: ${p.stok}</p>
+                    <button class="btn btn-warning text-dark fw-bold w-100 mt-auto rounded-3" onclick="tambahKeKeranjang(${p.id})">
+                        <i class="bi bi-cart-plus me-1"></i> Beli
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 2. FLASH SALE
+function renderFlashSale() {
+    const produkList = JSON.parse(localStorage.getItem("produk")) || [];
+    const flashList = JSON.parse(localStorage.getItem("flashsale")) || [];
+    const container = document.getElementById("flashsale-list");
+
+    if (!container) return;
+
+    if (flashList.length === 0) {
+        container.innerHTML = `<div class="col-12 text-center text-muted py-4"><i class="bi bi-lightning-charge fs-2 d-block mb-2"></i>Belum ada Flash Sale.</div>`;
+        return;
+    }
+
+    let html = '';
+    flashList.forEach(fs => {
+        const prod = produkList.find(p => p.id === fs.produkId);
+        if (prod) {
+            const hargaDiskon = prod.harga - (prod.harga * (fs.diskonPercent / 100));
+            html += `
+                <div class="col-6 col-md-4 col-lg-3">
+                    <div class="card h-100 product-card border-warning border-2 shadow-sm position-relative">
+                        <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 fw-bold rounded-end-3 small z-1">
+                            -${fs.diskonPercent}%
+                        </span>
+                        <img src="${prod.gambar}" class="card-img-top product-img" alt="${prod.nama}" onclick="openProductModal(${prod.id})">
+                        <div class="card-body d-flex flex-column p-3">
+                            <h6 class="card-title fw-bold text-dark mb-1 text-truncate" onclick="openProductModal(${prod.id})" style="cursor:pointer;">${prod.nama}</h6>
+                            <div class="mb-2">
+                                <span class="text-muted text-decoration-line-through small me-1">${formatRupiah(prod.harga)}</span>
+                                <span class="text-danger fw-bold fs-6">${formatRupiah(hargaDiskon)}</span>
+                            </div>
+                            <button class="btn btn-danger text-white fw-bold w-100 mt-auto rounded-3" onclick="tambahKeKeranjangDirect(${prod.id}, ${hargaDiskon})">
+                                <i class="bi bi-lightning-fill me-1"></i> Beli Flash
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+
+    container.innerHTML = html;
+}
+
+function tambahKeKeranjang(id) {
+    const produkList = JSON.parse(localStorage.getItem("produk")) || [];
+    const prod = produkList.find(p => p.id === id);
+    if (!prod) return;
+
+    let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
+    keranjang.push({ cartId: Date.now(), id: prod.id, nama: prod.nama, harga: prod.harga, gambar: prod.gambar });
+
+    localStorage.setItem("keranjang", JSON.stringify(keranjang));
+    renderKeranjang();
+    alert(`"${prod.nama}" berhasil ditambahkan ke keranjang!`);
+}
+
+function tambahKeKeranjangDirect(id, hargaDiskon) {
+    const produkList = JSON.parse(localStorage.getItem("produk")) || [];
+    const prod = produkList.find(p => p.id === id);
+    if (!prod) return;
+
+    let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
+    keranjang.push({ cartId: Date.now(), id: prod.id, nama: prod.nama + " (Flash Sale)", harga: hargaDiskon, gambar: prod.gambar });
+
+    localStorage.setItem("keranjang", JSON.stringify(keranjang));
+    renderKeranjang();
+    alert(`"${prod.nama}" (Flash Sale) berhasil ditambahkan ke keranjang!`);
+}
+
+// 3. KERANJANG & CHECKOUT
+function renderKeranjang() {
+    const keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
+    const container = document.getElementById("keranjang-list");
+    const totalElem = document.getElementById("total-keranjang");
+    const badgeElem = document.getElementById("cart-badge");
+
+    if (badgeElem) {
+        badgeElem.innerText = keranjang.length;
+        badgeElem.style.display = keranjang.length > 0 ? "inline-block" : "none";
+    }
+
+    if (!container) return;
+
+    if (keranjang.length === 0) {
+        container.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-4">Keranjang masih kosong.</td></tr>`;
+        if (totalElem) totalElem.innerText = "Rp 0";
+        return;
+    }
+
+    let total = 0;
+    container.innerHTML = keranjang.map((item, index) => {
+        total += Number(item.harga);
+        return `
+            <tr>
+                <td class="ps-4">
+                    <div class="d-flex align-items-center">
+                        <img src="${item.gambar}" class="rounded-2 me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                        <span class="fw-medium text-dark">${item.nama}</span>
+                    </div>
+                </td>
+                <td class="fw-semibold">${formatRupiah(item.harga)}</td>
+                <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-outline-danger border-0" onclick="hapusKeranjang(${index})">
+                        <i class="bi bi-trash-fill fs-6"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (totalElem) totalElem.innerText = formatRupiah(total);
+}
+
+function hapusKeranjang(index) {
+    let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
+    keranjang.splice(index, 1);
+    localStorage.setItem("keranjang", JSON.stringify(keranjang));
+    renderKeranjang();
+}
+
+function checkout(event) {
+    event.preventDefault();
+    let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
+
+    if (keranjang.length === 0) {
+        alert("Keranjang Anda masih kosong.");
+        return;
+    }
+
+    const nama = document.getElementById("cust-nama").value.trim();
+    const telepon = document.getElementById("cust-telepon").value.trim();
+    const alamat = document.getElementById("cust-alamat").value.trim();
+
+    let totalHarga = keranjang.reduce((sum, item) => sum + Number(item.harga), 0);
+    let daftarBarang = keranjang.map(item => item.nama).join(", ");
+
+    const pesananBaru = {
+        id: Date.now(),
+        nama: nama,
+        telepon: telepon,
+        alamat: alamat,
+        totalHarga: totalHarga,
+        daftarBarang: daftarBarang,
+        tanggal: new Date().toISOString()
+    };
+
+    let pesananList = JSON.parse(localStorage.getItem("pesanan")) || [];
+    pesananList.push(pesananBaru);
+    localStorage.setItem("pesanan", JSON.stringify(pesananList));
+
+    localStorage.setItem("keranjang", JSON.stringify([]));
+    renderKeranjang();
+    document.getElementById("checkout-form").reset();
+
+    alert("Pesanan Berhasil!");
+}
+
+// Modal Video / Popup Detail
+function openProductModal(id) {
+    const produkList = JSON.parse(localStorage.getItem("produk")) || [];
+    const prod = produkList.find(p => p.id === id);
+    if (!prod) return;
+
+    document.getElementById("modal-title").innerText = prod.nama;
+    
+    let videoHtml = "";
+    if (prod.video) {
+        let embedUrl = prod.video;
+        if (embedUrl.includes("watch?v=")) embedUrl = embedUrl.replace("watch?v=", "embed/");
+        videoHtml = `
+            <div class="ratio ratio-16x9 mb-3 rounded-3 overflow-hidden shadow-sm">
+                <iframe src="${embedUrl}" title="Product Video" allowfullscreen></iframe>
+            </div>
+        `;
+    }
+
+    document.getElementById("modal-body").innerHTML = `
+        ${videoHtml}
+        <div class="row align-items-center">
+            <div class="col-md-5 mb-3 mb-md-0">
+                <img src="${prod.gambar}" class="img-fluid rounded-3 shadow-sm w-100" alt="${prod.nama}">
+            </div>
+            <div class="col-md-7">
+                <span class="badge bg-warning text-dark mb-2">${prod.kategori}</span>
+                <h4 class="fw-bold text-dark">${prod.nama}</h4>
+                <h3 class="text-warning fw-bold mb-3">${formatRupiah(prod.harga)}</h3>
+                <p class="text-muted small mb-2"><strong>Stok:</strong> ${prod.stok} unit</p>
+                <p class="text-secondary">${prod.deskripsi || 'Deskripsi produk belum tersedia.'}</p>
+                <button class="btn btn-warning fw-bold text-dark w-100 py-2 rounded-3 mt-2" onclick="tambahKeKeranjang(${prod.id}); bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();">
+                    <i class="bi bi-cart-plus me-1"></i> Tambah Ke Keranjang
+                </button>
+            </div>
+        </div>
+    `;
+
+    const modal = new bootstrap.Modal(document.getElementById('productModal'));
+    modal.show();
+}
+
+function logout() {
+    localStorage.removeItem("isAdmin");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderProducts();
+    renderFlashSale();
+    renderKeranjang();
+});
