@@ -3,202 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Elektronik Store</title>
-    <!-- Google Fonts Poppins -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5.3 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+    <title>Panel Admin - ElectroStore</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-light">
+<body class="bg-dark pb-navbar">
 
-    <!-- Navbar Admin -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
-        <div class="container">
-            <a class="navbar-brand font-weight-bold text-warning" href="#">
-                <i class="bi bi-shield-lock-fill me-2"></i>Admin Panel
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="adminNavbar">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="nav-dashboard" href="#dashboard" onclick="showTab('dashboard')"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="nav-produk" href="#produk" onclick="showTab('produk')"><i class="bi bi-box-seam me-1"></i> Produk</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="nav-pesanan" href="#pesanan" onclick="showTab('pesanan')"><i class="bi bi-cart-check me-1"></i> Pesanan</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="nav-flashsale" href="#flashsale" onclick="showTab('flashsale')"><i class="bi bi-lightning-fill me-1"></i> Flash Sale</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="nav-laporan" href="#laporan" onclick="showTab('laporan')"><i class="bi bi-graph-up me-1"></i> Laporan</a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <button onclick="logoutAdmin()" class="btn btn-outline-warning btn-sm"><i class="bi bi-box-arrow-right me-1"></i> Logout</button>
-                </div>
-            </div>
+    <!-- Header & Navbar Admin -->
+    <header class="top-header">
+        <div class="header-container">
+            <h2 class="brand-logo">📱 Admin<span>Panel</span></h2>
+            <a href="login.html" class="btn btn-sm btn-outline-danger">Logout</a>
         </div>
-    </nav>
+        <!-- Menu Navigation Tabs -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" onclick="openAdminTab('dashboard', this)">Dashboard</button>
+            <button class="tab-btn" onclick="openAdminTab('produk', this)">Produk</button>
+            <button class="tab-btn" onclick="openAdminTab('pesanan', this)">Pesanan</button>
+            <button class="tab-btn" onclick="openAdminTab('flashsale', this)">Flash Sale</button>
+            <button class="tab-btn" onclick="openAdminTab('laporan', this)">Laporan</button>
+        </nav>
+    </header>
 
-    <div class="container py-4">
+    <main class="container mt-3">
 
         <!-- TAB 1: DASHBOARD -->
-        <div id="tab-dashboard" class="tab-content">
-            <h3 class="fw-bold mb-4">Dashboard Overview</h3>
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 bg-white">
-                        <div class="card-body p-4 d-flex align-items-center">
-                            <div class="bg-warning text-dark rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                <i class="bi bi-box-seam fs-3"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted fw-normal mb-1">Total Produk</h6>
-                                <h2 class="fw-bold mb-0" id="dash-total-produk">0</h2>
-                            </div>
-                        </div>
-                    </div>
+        <section id="tab-dashboard" class="tab-content active">
+            <h3 class="section-title">Ringkasan Hari Ini</h3>
+            <div class="grid-cards">
+                <div class="card stat-card">
+                    <h4>Total Produk</h4>
+                    <p id="dashTotalProduk" class="stat-value">0</p>
                 </div>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4 bg-white">
-                        <div class="card-body p-4 d-flex align-items-center">
-                            <div class="bg-dark text-warning rounded-circle p-3 me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-                                <i class="bi bi-cart-check fs-3"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted fw-normal mb-1">Jumlah Pesanan Hari Ini</h6>
-                                <h2 class="fw-bold mb-0" id="dash-pesanan-today">0</h2>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card stat-card">
+                    <h4>Terjual Hari Ini</h4>
+                    <p id="dashTerjualHariIni" class="stat-value">0</p>
+                </div>
+                <div class="card stat-card highlight">
+                    <h4>Pendapatan Hari Ini</h4>
+                    <p id="dashPendapatanHariIni" class="stat-value">Rp 0</p>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- TAB 2: PRODUK -->
-        <div id="tab-produk" class="tab-content d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold m-0">Kelola Produk</h3>
-                <button class="btn btn-warning fw-bold text-dark shadow-sm rounded-3" onclick="tambahProdukPrompt()">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah Produk
-                </button>
+        <section id="tab-produk" class="tab-content">
+            <div class="flex-between mb-3">
+                <h3 class="section-title">Manajemen Produk</h3>
+                <button class="btn btn-primary" onclick="openProductModal()">+ Tambah Produk</button>
             </div>
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-dark text-white">
-                                <tr>
-                                    <th class="ps-3">Gambar</th>
-                                    <th>Nama Produk</th>
-                                    <th>Kategori</th>
-                                    <th>Harga</th>
-                                    <th>Stok</th>
-                                    <th>Vidio URL</th>
-                                    <th class="text-end pe-3">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-produk-list"></tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Gambar</th>
+                            <th>Nama</th>
+                            <th>Harga</th>
+                            <th>Stok</th>
+                            <th>Kategori</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProductTable">
+                        <!-- Data dikontrol JS -->
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </section>
 
         <!-- TAB 3: PESANAN -->
-        <div id="tab-pesanan" class="tab-content d-none">
-            <h3 class="fw-bold mb-4">Daftar Pesanan Masuk</h3>
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-dark text-white">
-                                <tr>
-                                    <th class="ps-3">Tanggal</th>
-                                    <th>Nama Pelanggan</th>
-                                    <th>No Telepon</th>
-                                    <th>Alamat</th>
-                                    <th>Daftar Barang</th>
-                                    <th>Total Harga</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-pesanan-list"></tbody>
-                        </table>
-                    </div>
-                </div>
+        <section id="tab-pesanan" class="tab-content">
+            <h3 class="section-title">Daftar Pesanan Masuk</h3>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Tanggal</th>
+                            <th>Pelanggan</th>
+                            <th>No.Telp / Alamat</th>
+                            <th>Item (Qty)</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminOrderTable">
+                        <!-- Data dikontrol JS -->
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </section>
 
         <!-- TAB 4: FLASH SALE -->
-        <div id="tab-flashsale" class="tab-content d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold m-0">Pengaturan Flash Sale</h3>
-                <button class="btn btn-warning fw-bold text-dark shadow-sm rounded-3" onclick="tambahFlashSalePrompt()">
-                    <i class="bi bi-plus-circle me-1"></i> Tambah Flash Sale
-                </button>
+        <section id="tab-flashsale" class="tab-content">
+            <div class="flex-between mb-3">
+                <h3 class="section-title">Program Flash Sale</h3>
+                <button class="btn btn-accent" onclick="openFlashSaleModal()">+ Tambah Flash Sale</button>
             </div>
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-dark text-white">
-                                <tr>
-                                    <th class="ps-3">Produk</th>
-                                    <th>Harga Normal</th>
-                                    <th>Diskon (%)</th>
-                                    <th>Harga Diskon</th>
-                                    <th class="text-end pe-3">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="admin-flashsale-list"></tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Gambar</th>
+                            <th>Nama Produk</th>
+                            <th>Harga Normal</th>
+                            <th>Diskon</th>
+                            <th>Harga Sale</th>
+                            <th>Berakhir Pada</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminFlashTable">
+                        <!-- Data dikontrol JS -->
+                    </tbody>
+                </table>
             </div>
-        </div>
+        </section>
 
         <!-- TAB 5: LAPORAN -->
-        <div id="tab-laporan" class="tab-content d-none">
-            <h3 class="fw-bold mb-4">Rekap Penjualan</h3>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-3">
-                    <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
-                        <p class="text-muted small mb-1">Penjualan Minggu Ini</p>
-                        <h4 class="fw-bold text-dark" id="lap-minggu">Rp 0</h4>
-                    </div>
+        <section id="tab-laporan" class="tab-content">
+            <h3 class="section-title">Laporan Penjualan</h3>
+            <div class="grid-cards mb-3">
+                <div class="card stat-card">
+                    <h4>Minggu Ini</h4>
+                    <p id="lapMingguIni" class="stat-value">Rp 0</p>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
-                        <p class="text-muted small mb-1">Penjualan Bulan Ini</p>
-                        <h4 class="fw-bold text-dark" id="lap-bulan">Rp 0</h4>
-                    </div>
+                <div class="card stat-card">
+                    <h4>Bulan Ini</h4>
+                    <p id="lapBulanIni" class="stat-value">Rp 0</p>
                 </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card border-0 shadow-sm rounded-4 bg-white text-center p-3">
-                        <p class="text-muted small mb-1">Penjualan Tahun Ini</p>
-                        <h4 class="fw-bold text-dark" id="lap-tahun">Rp 0</h4>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-3">
-                    <div class="card border-0 shadow-sm rounded-4 bg-dark text-warning text-center p-3">
-                        <p class="text-warning-50 small mb-1">Total Pendapatan Keseluruhan</p>
-                        <h4 class="fw-bold" id="lap-total">Rp 0</h4>
-                    </div>
+                <div class="card stat-card highlight">
+                    <h4>Tahun Ini</h4>
+                    <p id="lapTahunIni" class="stat-value">Rp 0</p>
                 </div>
             </div>
-        </div>
 
+            <h4 class="mb-2">10 Pesanan Terbaru</h4>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID / Tanggal</th>
+                            <th>Nama</th>
+                            <th>Total Bayar</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminReportTable">
+                        <!-- Data dikontrol JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL FORM PRODUK (TAMBAH / EDIT) -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeProductModal()">&times;</span>
+            <h3 id="productModalTitle">Tambah Produk Baru</h3>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <input type="hidden" id="prodId">
+                
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" id="prodNama" class="form-control" required>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group">
+                        <label>Harga (Rp)</label>
+                        <input type="number" id="prodHarga" class="form-control" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Stok</label>
+                        <input type="number" id="prodStok" class="form-control" required min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <select id="prodKategori" class="form-control" required>
+                        <option value="HP">HP</option>
+                        <option value="Laptop">Laptop</option>
+                        <option value="TV">TV</option>
+                        <option value="Aksesori">Aksesori</option>
+                        <option value="Audio">Audio</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi Produk</label>
+                    <textarea id="prodDeskripsi" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Upload Gambar (Galeri)</label>
+                    <input type="file" id="prodImgInput" class="form-control" accept="image/*" onchange="previewBase64('prodImgInput', 'prodImgPreview')">
+                    <input type="hidden" id="prodImgBase64">
+                    <img id="prodImgPreview" class="img-preview hidden mt-2" alt="Preview Gambar">
+                </div>
+                <div class="form-group">
+                    <label>Upload Video (Galeri - Opsional)</label>
+                    <input type="file" id="prodVidInput" class="form-control" accept="video/*" onchange="previewBase64('prodVidInput', 'prodVidPreview', true)">
+                    <input type="hidden" id="prodVidBase64">
+                    <video id="prodVidPreview" class="video-preview hidden mt-2" controls></video>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Simpan Produk</button>
+            </form>
+        </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="admin.js"></script>
+    <!-- MODAL FLASH SALE -->
+    <div id="flashModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeFlashModal()">&times;</span>
+            <h3>Tambah Produk Flash Sale</h3>
+            <form id="flashForm" onsubmit="saveFlashSale(event)">
+                <div class="form-group">
+                    <label>Pilih Produk</label>
+                    <select id="flashProdId" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Diskon (%)</label>
+                    <input type="number" id="flashDiscount" class="form-control" min="1" max="99" required placeholder="Contoh: 20">
+                </div>
+                <div class="form-group">
+                    <label>Waktu Berakhir</label>
+                    <input type="datetime-local" id="flashEndTime" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-accent btn-block">Aktifkan Flash Sale</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            initDefaultData();
+            renderAdminDashboard();
+            renderAdminProducts();
+            renderAdminOrders();
+            renderAdminFlashSales();
+            renderAdminReports();
+        });
+    </script>
 </body>
 </html>
