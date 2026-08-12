@@ -3,51 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mobile Store</title>
+    <title>Login - Toko Elektronik</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-dark flex-center min-h-100">
+<body class="bg-gray center-flex">
 
-    <div class="card auth-card">
-        <div class="auth-header text-center">
-            <h1 class="brand-logo">📱 Electro<span>Store</span></h1>
-            <p>Sistem E-Commerce Elektronik</p>
-        </div>
+    <div class="card login-card">
+        <h2 class="text-center text-primary mb-2">E-Store Elektronik</h2>
+        <p class="text-center text-muted mb-3">Pilih Mode Masuk Aplikasi</p>
 
         <!-- Pilihan Mode Login -->
-        <div class="auth-toggle">
-            <button type="button" id="btnModeAdmin" class="btn-toggle active" onclick="switchLoginMode('admin')">Admin</button>
-            <button type="button" id="btnModePelanggan" class="btn-toggle" onclick="switchLoginMode('pelanggan')">Pelanggan</button>
+        <div id="login-selection" class="flex-col gap-2">
+            <button type="button" class="btn btn-primary btn-block" onclick="showAdminForm()">Login Admin</button>
+            <button type="button" class="btn btn-secondary btn-block" onclick="loginAsCustomer()">Masuk Sebagai Pelanggan</button>
         </div>
 
-        <!-- Form Login Admin -->
-        <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+        <!-- Form Admin (Default Tersembunyi) -->
+        <form id="admin-form" class="hidden flex-col gap-2 mt-2" onsubmit="handleAdminLogin(event)">
+            <h3 class="text-center mb-1">Form Login Admin</h3>
             <div class="form-group">
-                <label for="username">Username Admin</label>
-                <input type="text" id="username" class="form-control" placeholder="Default: admin" required>
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Masukkan username" required>
             </div>
             <div class="form-group">
-                <label for="password">Password Admin</label>
-                <input type="password" id="password" class="form-control" placeholder="Default: admin123" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Masukkan password" required>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Login ke Panel Admin</button>
+            <button type="submit" class="btn btn-primary btn-block">Masuk Admin</button>
+            <button type="button" class="btn btn-outline btn-block mt-1" onclick="hideAdminForm()">Kembali</button>
         </form>
-
-        <!-- Pilihan Masuk Sebagai Pelanggan -->
-        <div id="pelangganSection" class="hidden text-center mt-3">
-            <p class="mb-2">Jelajahi catalog dan belanja produk elektronik terbaru.</p>
-            <a href="index.html" class="btn btn-accent btn-block">Masuk Sebagai Pelanggan</a>
-        </div>
     </div>
 
-    <!-- JavaScript Utama -->
     <script src="js/script.js"></script>
-    <script>
-        // Inisialisasi awal saat halaman login dimuat
-        document.addEventListener('DOMContentLoaded', () => {
-            initDefaultData();
-            switchLoginMode('admin'); // Default tampilkan mode admin
-        });
-    </script>
 </body>
 </html>
