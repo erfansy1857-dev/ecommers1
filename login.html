@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mobile Store</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-dark flex-center min-h-100">
+
+    <div class="card auth-card">
+        <div class="auth-header text-center">
+            <h1 class="brand-logo">📱 Electro<span>Store</span></h1>
+            <p>Sistem E-Commerce Elektronik</p>
+        </div>
+
+        <!-- Pilihan Mode Login -->
+        <div class="auth-toggle">
+            <button type="button" id="btnModeAdmin" class="btn-toggle active" onclick="switchLoginMode('admin')">Admin</button>
+            <button type="button" id="btnModePelanggan" class="btn-toggle" onclick="switchLoginMode('pelanggan')">Pelanggan</button>
+        </div>
+
+        <!-- Form Login Admin -->
+        <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+            <div class="form-group">
+                <label for="username">Username Admin</label>
+                <input type="text" id="username" class="form-control" placeholder="Default: admin" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password Admin</label>
+                <input type="password" id="password" class="form-control" placeholder="Default: admin123" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Login ke Panel Admin</button>
+        </form>
+
+        <!-- Pilihan Masuk Sebagai Pelanggan -->
+        <div id="pelangganSection" class="hidden text-center mt-3">
+            <p class="mb-2">Jelajahi catalog dan belanja produk elektronik terbaru.</p>
+            <a href="index.html" class="btn btn-accent btn-block">Masuk Sebagai Pelanggan</a>
+        </div>
+    </div>
+
+    <!-- JavaScript Utama -->
+    <script src="js/script.js"></script>
+    <script>
+        // Inisialisasi awal saat halaman login dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            initDefaultData();
+            switchLoginMode('admin'); // Default tampilkan mode admin
+        });
+    </script>
+</body>
+</html>
