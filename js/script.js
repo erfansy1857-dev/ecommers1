@@ -1,27 +1,11 @@
 /* ==========================================================================
-   INITIALIZATION & SEED DATA
+   HELPER UTILITIES & LOCALSTORAGE MANAGEMENT
    ========================================================================== */
-document.addEventListener("DOMContentLoaded", () => {
-    initDefaultData();
-    
-    // Auto Load Data sesuai Halaman
-    if (document.getElementById("table-produk")) {
-        checkAdminSession();
-        renderAdminDashboard();
-        renderAdminProducts();
-        renderAdminOrders();
-        renderAdminFlashsale();
-        renderAdminReports();
-    }
-    
-    if (document.getElementById("grid-produk")) {
-        renderCustomerProducts();
-        renderCustomerFlashsale();
-        renderCart();
-    }
-});
+const getStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
+const setStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+const formatRupiah = (number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(number);
 
-// Seed data default jika localStorage masih kosong
+// Inisialisasi Data Awal saat Pertama Buka Aplikasi
 function initDefaultData() {
     if (!localStorage.getItem("products")) {
         const defaultProducts = [
@@ -31,32 +15,49 @@ function initDefaultData() {
             { id: 4, nama: "TWS Earphone Wireless Bass", harga: 350000, stok: 12, kategori: "Aksesori", gambar: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400", video: "" },
             { id: 5, nama: "Charger Fast Charging 65W", harga: 150000, stok: 2, kategori: "Aksesori", gambar: "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=400", video: "" }
         ];
-        localStorage.setItem("products", JSON.stringify(defaultProducts));
+        setStorage("products", defaultProducts);
     }
-    if (!localStorage.getItem("orders")) localStorage.setItem("orders", JSON.stringify([]));
-    if (!localStorage.getItem("flashsales")) localStorage.setItem("flashsales", JSON.stringify([]));
-    if (!localStorage.getItem("cart")) localStorage.setItem("cart", JSON.stringify([]));
+    if (!localStorage.getItem("orders")) setStorage("orders", []);
+    if (!localStorage.getItem("flashsales")) setStorage("flashsales", []);
+    if (!localStorage.getItem("cart")) setStorage("cart", []);
 }
 
-// Helper Get & Set Storage
-const getStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
-const setStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
-const formatRupiah = (number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(number);
+// Inisialisasi saat Dokumen Selesai Dimuat
+document.addEventListener("DOMContentLoaded", () => {
+    initDefaultData();
+    
+    // Halaman Admin
+    if (document.getElementById("table-produk")) {
+        window.checkAdminSession();
+        window.renderAdminDashboard();
+        window.renderAdminProducts();
+        window.renderAdminOrders();
+        window.renderAdminFlashsale();
+        window.renderAdminReports();
+    }
+    
+    // Halaman Toko / Pelanggan
+    if (document.getElementById("grid-produk")) {
+        window.renderCustomerProducts();
+        window.renderCustomerFlashsale();
+        window.renderCart();
+    }
+});
 
 /* ==========================================================================
-   1. LOGIN LOGIC
+   1. LOGIN & SESSION LOGIC (GLOBAL)
    ========================================================================== */
-function showAdminForm() {
+window.showAdminForm = function() {
     document.getElementById("login-selection").classList.add("hidden");
     document.getElementById("admin-form").classList.remove("hidden");
-}
+};
 
-function hideAdminForm() {
+window.hideAdminForm = function() {
     document.getElementById("admin-form").classList.add("hidden");
     document.getElementById("login-selection").classList.remove("hidden");
-}
+};
 
-function handleAdminLogin(event) {
+window.handleAdminLogin = function(event) {
     event.preventDefault();
     const u = document.getElementById("username").value;
     const p = document.getElementById("password").value;
@@ -67,40 +68,44 @@ function handleAdminLogin(event) {
     } else {
         alert("Username atau Password Salah");
     }
-}
+};
 
-function loginAsCustomer() {
+window.loginAsCustomer = function() {
     window.location.href = "index.html";
-}
+};
 
-function checkAdminSession() {
+window.checkAdminSession = function() {
     if (!sessionStorage.getItem("adminLoggedIn")) {
         window.location.href = "login.html";
     }
-}
+};
 
-function logoutAdmin() {
+window.logoutAdmin = function() {
     sessionStorage.removeItem("adminLoggedIn");
     window.location.href = "login.html";
-}
+};
 
 /* ==========================================================================
-   2. ADMIN PANEL LOGIC (CRUD, FLASH SALE, ORDERS & REPORTS)
+   2. ADMIN TABS & MODALS CONTROLLERS (GLOBAL)
    ========================================================================== */
-function switchAdminTab(tabName) {
+window.switchAdminTab = function(e, tabName) {
+    if (e) e.preventDefault();
     document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".nav-links .nav-item").forEach(el => el.classList.remove("active"));
     
-    document.getElementById(`tab-${tabName}`).classList.remove("hidden");
-    event.target.classList.add("active");
+    const targetTab = document.getElementById(`tab-${tabName}`);
+    if (targetTab) targetTab.classList.remove("hidden");
+    if (e && e.target) e.target.classList.add("active");
 
-    if(tabName === 'dashboard') renderAdminDashboard();
-    if(tabName === 'laporan') renderAdminReports();
-}
+    if (tabName === 'dashboard') window.renderAdminDashboard();
+    if (tabName === 'laporan') window.renderAdminReports();
+};
 
-// Modal Product Handler
-function openProductModal(editId = null) {
-    document.getElementById("form-produk").reset();
+// Modal Produk
+window.openProductModal = function(editId = null) {
+    const form = document.getElementById("form-produk");
+    if (form) form.reset();
+    
     document.getElementById("prod-id").value = "";
     document.getElementById("modal-produk-title").innerText = "Tambah Produk";
 
@@ -118,15 +123,17 @@ function openProductModal(editId = null) {
             document.getElementById("modal-produk-title").innerText = "Edit Produk";
         }
     }
-    document.getElementById("modal-produk").classList.remove("hidden");
-}
+    
+    const modal = document.getElementById("modal-produk");
+    if (modal) modal.classList.remove("hidden");
+};
 
-function closeProductModal() {
-    document.getElementById("modal-produk").classList.add("hidden");
-}
+window.closeProductModal = function() {
+    const modal = document.getElementById("modal-produk");
+    if (modal) modal.classList.add("hidden");
+};
 
-// Save / Edit Product
-function saveProduct(event) {
+window.saveProduct = function(event) {
     event.preventDefault();
     let products = getStorage("products");
     const id = document.getElementById("prod-id").value;
@@ -148,28 +155,28 @@ function saveProduct(event) {
     }
 
     setStorage("products", products);
-    closeProductModal();
-    renderAdminProducts();
-    renderAdminDashboard();
-}
+    window.closeProductModal();
+    window.renderAdminProducts();
+    window.renderAdminDashboard();
+};
 
-function deleteProduct(id) {
+window.deleteProduct = function(id) {
     if (confirm("Yakin ingin menghapus produk ini?")) {
         let products = getStorage("products").filter(p => p.id !== id);
         setStorage("products", products);
         
-        // Hapus juga dari flash sale jika ada
         let flashsales = getStorage("flashsales").filter(f => f.productId !== id);
         setStorage("flashsales", flashsales);
 
-        renderAdminProducts();
-        renderAdminDashboard();
+        window.renderAdminProducts();
+        window.renderAdminDashboard();
     }
-}
+};
 
-function renderAdminProducts() {
+window.renderAdminProducts = function() {
     const products = getStorage("products");
     const tbody = document.getElementById("table-produk");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     products.forEach(p => {
@@ -181,57 +188,65 @@ function renderAdminProducts() {
                 <td>${p.stok}</td>
                 <td>${p.kategori}</td>
                 <td>
-                    <button class="btn btn-sm btn-warning" onclick="openProductModal(${p.id})">Edit</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Hapus</button>
+                    <button type="button" class="btn btn-sm btn-warning" onclick="openProductModal(${p.id})">Edit</button>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Hapus</button>
                 </td>
             </tr>
         `;
     });
-}
+};
 
-// Flash Sale Admin Logic
-function openFlashsaleModal() {
+// Modal Flash Sale
+window.openFlashsaleModal = function() {
     const products = getStorage("products");
     const select = document.getElementById("fs-prod-id");
+    
+    if (!select) return;
     select.innerHTML = "";
     
+    if (products.length === 0) {
+        alert("Belum ada produk. Tambahkan produk terlebih dahulu!");
+        return;
+    }
+
     products.forEach(p => {
         select.innerHTML += `<option value="${p.id}">${p.nama} - (${formatRupiah(p.harga)})</option>`;
     });
 
-    document.getElementById("modal-flashsale").classList.remove("hidden");
-}
+    const modal = document.getElementById("modal-flashsale");
+    if (modal) modal.classList.remove("hidden");
+};
 
-function closeFlashsaleModal() {
-    document.getElementById("modal-flashsale").classList.add("hidden");
-}
+window.closeFlashsaleModal = function() {
+    const modal = document.getElementById("modal-flashsale");
+    if (modal) modal.classList.add("hidden");
+};
 
-function saveFlashsale(e) {
+window.saveFlashsale = function(e) {
     e.preventDefault();
     let flashsales = getStorage("flashsales");
     const prodId = parseInt(document.getElementById("fs-prod-id").value);
     const diskon = parseInt(document.getElementById("fs-diskon").value);
 
-    // Hapus duplikat jika produk sudah ada di flash sale
     flashsales = flashsales.filter(f => f.productId !== prodId);
-
     flashsales.push({ id: Date.now(), productId: prodId, diskon });
+    
     setStorage("flashsales", flashsales);
+    window.closeFlashsaleModal();
+    window.renderAdminFlashsale();
+};
 
-    closeFlashsaleModal();
-    renderAdminFlashsale();
-}
-
-function deleteFlashsale(id) {
+window.deleteFlashsale = function(id) {
     let flashsales = getStorage("flashsales").filter(f => f.id !== id);
     setStorage("flashsales", flashsales);
-    renderAdminFlashsale();
-}
+    window.renderAdminFlashsale();
+};
 
-function renderAdminFlashsale() {
+window.renderAdminFlashsale = function() {
     const flashsales = getStorage("flashsales");
     const products = getStorage("products");
     const tbody = document.getElementById("table-flashsale");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     flashsales.forEach(fs => {
@@ -244,20 +259,21 @@ function renderAdminFlashsale() {
                     <td>${formatRupiah(prod.harga)}</td>
                     <td><span class="text-danger font-bold">${fs.diskon}%</span></td>
                     <td>${formatRupiah(hargaDiskon)}</td>
-                    <td><button class="btn btn-sm btn-danger" onclick="deleteFlashsale(${fs.id})">Hapus</button></td>
+                    <td><button type="button" class="btn btn-sm btn-danger" onclick="deleteFlashsale(${fs.id})">Hapus</button></td>
                 </tr>
             `;
         }
     });
-}
+};
 
-// Render Orders & Dashboard stats
-function renderAdminOrders() {
+// Admin Dashboard, Orders & Reports Renderers
+window.renderAdminOrders = function() {
     const orders = getStorage("orders");
     const tbody = document.getElementById("table-pesanan");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
-    orders.reverse().forEach(o => {
+    [...orders].reverse().forEach(o => {
         const itemDetails = o.items.map(i => `${i.nama} (${i.qty}x)`).join(", ");
         tbody.innerHTML += `
             <tr>
@@ -271,14 +287,15 @@ function renderAdminOrders() {
             </tr>
         `;
     });
-}
+};
 
-function renderAdminDashboard() {
+window.renderAdminDashboard = function() {
     const products = getStorage("products");
     const orders = getStorage("orders");
     const todayStr = new Date().toISOString().split('T')[0];
 
-    document.getElementById("dash-total-produk").innerText = products.length;
+    const dashTotal = document.getElementById("dash-total-produk");
+    if (dashTotal) dashTotal.innerText = products.length;
 
     let totalTerjualHariIni = 0;
     orders.forEach(o => {
@@ -286,11 +303,12 @@ function renderAdminDashboard() {
             o.items.forEach(i => totalTerjualHariIni += i.qty);
         }
     });
-    document.getElementById("dash-terjual-hari-ini").innerText = totalTerjualHariIni;
-}
 
-// Render Sales Reports
-function renderAdminReports() {
+    const dashTerjual = document.getElementById("dash-terjual-hari-ini");
+    if (dashTerjual) dashTerjual.innerText = totalTerjualHariIni;
+};
+
+window.renderAdminReports = function() {
     const orders = getStorage("orders");
     const now = new Date();
 
@@ -305,44 +323,46 @@ function renderAdminReports() {
         if (oDate.getFullYear() === now.getFullYear()) tahunIni += o.total;
     });
 
-    document.getElementById("lap-minggu").innerText = formatRupiah(mIngguIni);
-    document.getElementById("lap-bulan").innerText = formatRupiah(bulanIni);
-    document.getElementById("lap-tahun").innerText = formatRupiah(tahunIni);
-}
+    if(document.getElementById("lap-minggu")) document.getElementById("lap-minggu").innerText = formatRupiah(mIngguIni);
+    if(document.getElementById("lap-bulan")) document.getElementById("lap-bulan").innerText = formatRupiah(bulanIni);
+    if(document.getElementById("lap-tahun")) document.getElementById("lap-tahun").innerText = formatRupiah(tahunIni);
+};
 
 /* ==========================================================================
-   3. CUSTOMER / SHOP LOGIC (CATALOG, CART, FLASH SALE & CHECKOUT)
+   3. CUSTOMER / SHOP LOGIC (GLOBAL)
    ========================================================================== */
 let activeCategory = "Semua";
 
-function switchCustomerTab(tabName) {
+window.switchCustomerTab = function(e, tabName) {
+    if (e) e.preventDefault();
     document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-    document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".nav-links .nav-item").forEach(el => el.classList.remove("active"));
     
-    document.getElementById(`tab-${tabName === 'flashsale' ? 'flashsale-cust' : tabName}`).classList.remove("hidden");
-    event.target.classList.add("active");
+    const target = document.getElementById(`tab-${tabName === 'flashsale' ? 'flashsale-cust' : tabName}`);
+    if (target) target.classList.remove("hidden");
+    if (e && e.target) e.target.classList.add("active");
 
-    if (tabName === 'keranjang') renderCart();
-}
+    if (tabName === 'keranjang') window.renderCart();
+};
 
-function filterCategory(cat) {
+window.filterCategory = function(e, cat) {
     activeCategory = cat;
     document.querySelectorAll(".btn-category").forEach(b => {
         b.classList.toggle("active", b.innerText === cat);
     });
-    renderCustomerProducts();
-}
+    window.renderCustomerProducts();
+};
 
-function filterProducts() {
-    renderCustomerProducts();
-}
+window.filterProducts = function() {
+    window.renderCustomerProducts();
+};
 
-function renderCustomerProducts() {
+window.renderCustomerProducts = function() {
     const products = getStorage("products");
     const flashsales = getStorage("flashsales");
     const searchVal = document.getElementById("search-input") ? document.getElementById("search-input").value.toLowerCase() : "";
 
-    // 1. Render Produk Terpopuler (4 Stok Terendah)
+    // 1. Render Populer (4 Stok Terkecil)
     const sortedByStock = [...products].sort((a, b) => a.stok - b.stok).slice(0, 4);
     const gridPopuler = document.getElementById("grid-populer");
     if (gridPopuler) {
@@ -350,7 +370,7 @@ function renderCustomerProducts() {
         sortedByStock.forEach(p => gridPopuler.appendChild(createProductCard(p, flashsales)));
     }
 
-    // 2. Render Semua Produk dengan Filter
+    // 2. Render Katalog Produk
     const gridProduk = document.getElementById("grid-produk");
     if (gridProduk) {
         gridProduk.innerHTML = "";
@@ -362,7 +382,7 @@ function renderCustomerProducts() {
 
         filtered.forEach(p => gridProduk.appendChild(createProductCard(p, flashsales)));
     }
-}
+};
 
 function createProductCard(prod, flashsales) {
     const fs = flashsales.find(f => f.productId === prod.id);
@@ -379,7 +399,7 @@ function createProductCard(prod, flashsales) {
         `;
     }
 
-    const videoBtn = prod.video ? `<a href="${prod.video}" target="_blank" class="btn btn-sm btn-outline mt-1 text-center">🎥 Video Review</a>` : '';
+    const videoBtn = prod.video ? `<a href="${prod.video}" target="_blank" class="btn btn-sm btn-outline mt-1 text-center">🎥 Review Video</a>` : '';
 
     const div = document.createElement("div");
     div.className = "card product-card";
@@ -392,7 +412,7 @@ function createProductCard(prod, flashsales) {
             <div class="mt-1 mb-1">${priceHtml}</div>
         </div>
         <div class="flex-col gap-1 mt-1">
-            <button class="btn btn-primary btn-block btn-sm" onclick="addToCart(${prod.id})" ${prod.stok <= 0 ? 'disabled' : ''}>
+            <button type="button" class="btn btn-primary btn-block btn-sm" onclick="addToCart(${prod.id})" ${prod.stok <= 0 ? 'disabled' : ''}>
                 ${prod.stok > 0 ? '+ Keranjang' : 'Stok Habis'}
             </button>
             ${videoBtn}
@@ -401,7 +421,7 @@ function createProductCard(prod, flashsales) {
     return div;
 }
 
-function renderCustomerFlashsale() {
+window.renderCustomerFlashsale = function() {
     const flashsales = getStorage("flashsales");
     const products = getStorage("products");
     const grid = document.getElementById("grid-flashsale");
@@ -414,10 +434,10 @@ function renderCustomerFlashsale() {
             grid.appendChild(createProductCard(prod, flashsales));
         }
     });
-}
+};
 
-// CART & CHECKOUT LOGIC
-function addToCart(productId) {
+// Cart & Checkout
+window.addToCart = function(productId) {
     let cart = getStorage("cart");
     const products = getStorage("products");
     const prod = products.find(p => p.id === productId);
@@ -439,19 +459,19 @@ function addToCart(productId) {
     }
 
     setStorage("cart", cart);
-    updateCartBadge();
+    window.updateCartBadge();
     alert("Produk berhasil ditambahkan ke keranjang!");
-}
+};
 
-function updateCartBadge() {
+window.updateCartBadge = function() {
     const cart = getStorage("cart");
     const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
     const badge = document.getElementById("cart-count");
     if (badge) badge.innerText = totalCount;
-}
+};
 
-function renderCart() {
-    updateCartBadge();
+window.renderCart = function() {
+    window.updateCartBadge();
     const cart = getStorage("cart");
     const products = getStorage("products");
     const flashsales = getStorage("flashsales");
@@ -471,21 +491,21 @@ function renderCart() {
         const prod = products.find(p => p.id === item.productId);
         if (prod) {
             const fs = flashsales.find(f => f.productId === prod.id);
-            const hargaEfetif = fs ? prod.harga - (prod.harga * (fs.diskon / 100)) : prod.harga;
-            const subtotal = hargaEfetif * item.qty;
+            const hargaEfektif = fs ? prod.harga - (prod.harga * (fs.diskon / 100)) : prod.harga;
+            const subtotal = hargaEfektif * item.qty;
             grandTotal += subtotal;
 
             cartList.innerHTML += `
                 <div class="flex-between mb-2">
                     <div>
                         <strong>${prod.nama}</strong><br>
-                        <small>${formatRupiah(hargaEfetif)} x ${item.qty} = ${formatRupiah(subtotal)}</small>
+                        <small>${formatRupiah(hargaEfektif)} x ${item.qty} = ${formatRupiah(subtotal)}</small>
                     </div>
                     <div class="flex-between gap-1">
-                        <button class="btn btn-sm btn-secondary" onclick="updateCartQty(${prod.id}, -1)">-</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateCartQty(${prod.id}, -1)">-</button>
                         <span>${item.qty}</span>
-                        <button class="btn btn-sm btn-secondary" onclick="updateCartQty(${prod.id}, 1)">+</button>
-                        <button class="btn btn-sm btn-danger" onclick="removeFromCart(${prod.id})">x</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="updateCartQty(${prod.id}, 1)">+</button>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFromCart(${prod.id})">x</button>
                     </div>
                 </div>
             `;
@@ -493,9 +513,9 @@ function renderCart() {
     });
 
     document.getElementById("cart-total-price").innerText = formatRupiah(grandTotal);
-}
+};
 
-function updateCartQty(productId, change) {
+window.updateCartQty = function(productId, change) {
     let cart = getStorage("cart");
     const products = getStorage("products");
     const prod = products.find(p => p.id === productId);
@@ -508,22 +528,22 @@ function updateCartQty(productId, change) {
             return;
         }
         if (newQty <= 0) {
-            removeFromCart(productId);
+            window.removeFromCart(productId);
             return;
         }
         cartItem.qty = newQty;
         setStorage("cart", cart);
-        renderCart();
+        window.renderCart();
     }
-}
+};
 
-function removeFromCart(productId) {
+window.removeFromCart = function(productId) {
     let cart = getStorage("cart").filter(c => c.productId !== productId);
     setStorage("cart", cart);
-    renderCart();
-}
+    window.renderCart();
+};
 
-function handleCheckout(e) {
+window.handleCheckout = function(e) {
     e.preventDefault();
     const cart = getStorage("cart");
     let products = getStorage("products");
@@ -534,7 +554,6 @@ function handleCheckout(e) {
         return;
     }
 
-    // Hitung Item & Total Bayar
     let orderItems = [];
     let totalBayar = 0;
 
@@ -546,23 +565,20 @@ function handleCheckout(e) {
                 return;
             }
             const fs = flashsales.find(f => f.productId === prod.id);
-            const hargaEfetif = fs ? prod.harga - (prod.harga * (fs.diskon / 100)) : prod.harga;
+            const hargaEfektif = fs ? prod.harga - (prod.harga * (fs.diskon / 100)) : prod.harga;
             
             orderItems.push({
                 productId: prod.id,
                 nama: prod.nama,
                 qty: item.qty,
-                harga: hargaEfetif
+                harga: hargaEfektif
             });
 
-            totalBayar += hargaEfetif * item.qty;
-
-            // Potong Stok Produk
+            totalBayar += hargaEfektif * item.qty;
             prod.stok -= item.qty;
         }
     }
 
-    // Simpan Pesanan ke Storage
     const newOrder = {
         id: Date.now(),
         tanggal: new Date().toISOString().split('T')[0],
@@ -579,9 +595,22 @@ function handleCheckout(e) {
     
     setStorage("orders", orders);
     setStorage("products", products);
-    setStorage("cart", []); // Kosongkan Keranjang
+    setStorage("cart", []);
 
     alert("Pesanan Berhasil!");
     document.getElementById("form-checkout").reset();
-    renderCart();
-}
+    window.renderCart();
+};
+
+// Listener global untuk menutup modal saat klik di luar kotak modal (backdrop click)
+window.addEventListener("click", function(event) {
+    const modalProd = document.getElementById("modal-produk");
+    const modalFS = document.getElementById("modal-flashsale");
+    
+    if (event.target === modalProd) {
+        window.closeProductModal();
+    }
+    if (event.target === modalFS) {
+        window.closeFlashsaleModal();
+    }
+});
