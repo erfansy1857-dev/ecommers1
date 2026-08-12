@@ -8,6 +8,7 @@
 </head>
 <body>
 
+    <!-- Header Navbar Admin -->
     <header class="navbar bg-dark text-white">
         <div class="logo">Admin Panel</div>
         <nav class="nav-links">
@@ -22,9 +23,10 @@
 
     <div class="container mt-3 mb-4">
 
+        <!-- TAB DASHBOARD ADMIN -->
         <section id="tab-dashboard" class="tab-content">
-            <h2>Dashboard</h2>
-            <div class="grid-2 gap-2 mt-2">
+            <h2>Dashboard Overview</h2>
+            <div class="grid-4 gap-2 mt-2 mb-3">
                 <div class="card bg-primary text-white text-center">
                     <h3>Total Produk</h3>
                     <p class="stat-number" id="dash-total-produk">0</p>
@@ -33,9 +35,40 @@
                     <h3>Terjual Hari Ini</h3>
                     <p class="stat-number" id="dash-terjual-hari-ini">0</p>
                 </div>
+                <div class="card bg-warning text-white text-center">
+                    <h3>Jumlah Pesanan</h3>
+                    <p class="stat-number" id="dash-total-pesanan">0</p>
+                </div>
+                <div class="card bg-info text-white text-center">
+                    <h3>Total Pendapatan</h3>
+                    <p class="stat-number-sm" id="dash-total-pendapatan">Rp 0</p>
+                </div>
+            </div>
+
+            <!-- Tabel Semua Pesanan Ringkas (Scrollable) -->
+            <div class="card">
+                <h3 class="mb-2">Semua Pesanan Masuk</h3>
+                <div class="table-responsive scrollable-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID Pesanan</th>
+                                <th>Tanggal</th>
+                                <th>Nama Pelanggan</th>
+                                <th>Metode Bayar</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-dashboard-orders">
+                            <!-- Data diisi JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
+        <!-- TAB PRODUK -->
         <section id="tab-produk" class="tab-content hidden">
             <div class="flex-between mb-2">
                 <h2>Kelola Produk</h2>
@@ -60,7 +93,7 @@
 
         <!-- TAB PESANAN ADMIN -->
         <section id="tab-pesanan" class="tab-content hidden">
-            <h2>Daftar Pesanan Pelanggan</h2>
+            <h2>Daftar Pesanan & Kelola Status</h2>
             <div class="table-responsive mt-2">
                 <table class="table">
                     <thead>
@@ -80,6 +113,7 @@
             </div>
         </section>
 
+        <!-- TAB FLASH SALE -->
         <section id="tab-flashsale" class="tab-content hidden">
             <div class="flex-between mb-2">
                 <h2>Kelola Flash Sale</h2>
@@ -101,6 +135,7 @@
             </div>
         </section>
 
+        <!-- TAB LAPORAN -->
         <section id="tab-laporan" class="tab-content hidden">
             <h2>Laporan Penjualan</h2>
             <div class="grid-3 gap-2 mt-2">
