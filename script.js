@@ -1,379 +1,377 @@
-// 1. Auto-Redirect ke Login jika belum memilih akses
-if (!localStorage.getItem('userLoggedIn')) {
-  window.location.href = 'login.html';
-}
-
-// 2. Data Default Produk jika localStorage kosong
-const defaultProduk = [
-  { 
-    id: 1, 
-    nama: "Sepatu Sneakers Casual", 
-    harga: 250000, 
-    stok: 15, 
-    kategori: "Fashion", 
-    gambar: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500",
-    deskripsi: "Sepatu sneakers berkualitas tinggi dengan bahan sintetis yang nyaman dan sol karet anti-selip.",
-    video: ""
-  },
-  { 
-    id: 2, 
-    nama: "Smartwatch Sport v2", 
-    harga: 450000, 
-    stok: 8, 
-    kategori: "Elektronik", 
-    gambar: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500",
-    deskripsi: "Smartwatch sport waterproof dengan pengukur detak jantung, monitor tidur, dan notifikasi pintar.",
-    video: ""
-  },
-  { 
-    id: 3, 
-    nama: "Tas Ransel Anti Air", 
-    harga: 180000, 
-    stok: 20, 
-    kategori: "Aksesoris", 
-    gambar: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500",
-    deskripsi: "Tas ransel multifungsi dilapisi material waterproof, cocok untuk perkuliahan maupun travelling.",
-    video: ""
-  }
-];
-
-// 3. Inisialisasi Data Awal
-function initData() {
-  if (!localStorage.getItem('produk')) {
-    localStorage.setItem('produk', JSON.stringify(defaultProduk));
-  }
-  if (!localStorage.getItem('keranjang')) {
-    localStorage.setItem('keranjang', JSON.stringify([]));
-  }
-  if (!localStorage.getItem('pesanan')) {
-    localStorage.setItem('pesanan', JSON.stringify([]));
-  }
-  if (!localStorage.getItem('flashsale')) {
-    localStorage.setItem('flashsale', JSON.stringify([]));
-  }
-}
-
-initData();
-
-// Ambil Data dari localStorage
+// ==========================================
+// 1. DATA STATE & INISIALISASI
+// ==========================================
 let produkList = JSON.parse(localStorage.getItem('produk')) || [];
 let keranjangList = JSON.parse(localStorage.getItem('keranjang')) || [];
-let flashSaleList = JSON.parse(localStorage.getItem('flashsale')) || [];
+let pesananList = JSON.parse(localStorage.getItem('pesanan')) || [];
 
-function muatDataTerbaru() {
-  produkList = JSON.parse(localStorage.getItem('produk')) || [];
-  keranjangList = JSON.parse(localStorage.getItem('keranjang')) || [];
-  flashSaleList = JSON.parse(localStorage.getItem('flashsale')) || [];
+let activeCategory = 'Semua';
+let detailModalInstance = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const modalEl = document.getElementById('modalDetailProduk');
+  if (modalEl) {
+    detailModalInstance = new bootstrap.Modal(modalEl);
+  }
+
+  renderKategoriButtons();
+  renderSemuaTampilan();
+  updateCartBadge();
+});
+
+// Sync data ke localStorage
+function syncStorage() {
+  localStorage.setItem('keranjang', JSON.stringify(keranjangList));
+  localStorage.setItem('pesanan', JSON.stringify(pesananList));
+  updateCartBadge();
 }
 
-// 4. Navigasi Seksi
-function showSection(section) {
-  muatDataTerbaru();
+// Update Jumlah Badge Keranjang
+function updateCartBadge() {
+  const badge = document.getElementById('cartCount');
+  if (badge) {
+    const totalQty = keranjangList.reduce((acc, curr) => acc + (curr.qty || 1), 0);
+    badge.innerText = totalQty;
+  }
+}
 
+// Navigasi Seksi Tampilan (Dashboard, Flashsale, Keranjang)
+function showSection(sectionName) {
   document.getElementById('sec-dashboard').classList.add('d-none');
   document.getElementById('sec-flashsale').classList.add('d-none');
   document.getElementById('sec-keranjang').classList.add('d-none');
 
-  document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-dash-link').classList.remove('active');
+  document.getElementById('nav-flash-link').classList.remove('active');
+  document.getElementById('nav-cart-link').classList.remove('active');
 
-  if (section === 'dashboard') {
+  if (sectionName === 'dashboard') {
     document.getElementById('sec-dashboard').classList.remove('d-none');
     document.getElementById('nav-dash-link').classList.add('active');
-    renderProduk();
-  } else if (section === 'flashsale') {
+  } else if (sectionName === 'flashsale') {
     document.getElementById('sec-flashsale').classList.remove('d-none');
     document.getElementById('nav-flash-link').classList.add('active');
-    renderFlashSale();
-  } else if (section === 'keranjang') {
+  } else if (sectionName === 'keranjang') {
     document.getElementById('sec-keranjang').classList.remove('d-none');
     document.getElementById('nav-cart-link').classList.add('active');
-    renderKeranjang();
+    renderCartTable();
   }
 }
 
-// 5. Render Produk Dashboard
-function renderProduk(items = produkList) {
-  const popularContainer = document.getElementById('popularProductsContainer');
-  const allContainer = document.getElementById('allProductsContainer');
-
-  popularContainer.innerHTML = '';
-  allContainer.innerHTML = '';
-
-  if (items.length === 0) {
-    allContainer.innerHTML = '<div class="col-12 text-center text-muted py-4"><p>Tidak ada produk yang ditemukan.</p></div>';
-    return;
+function logout() {
+  if (confirm('Apakah Anda yakin ingin keluar?')) {
+    window.location.href = 'login.html';
   }
-
-  // Produk Terpopuler (4 Pertama)
-  const populars = items.slice(0, 4);
-  populars.forEach(p => {
-    popularContainer.innerHTML += createProductCard(p);
-  });
-
-  // Semua Produk
-  items.forEach(p => {
-    allContainer.innerHTML += createProductCard(p);
-  });
-
-  renderCategoryButtons();
-  updateCartBadge();
 }
 
-function createProductCard(p) {
-  const tombolBeli = p.stok > 0 
-    ? `<button onclick="tambahKeKeranjang(${p.id})" class="btn btn-primary btn-sm mt-auto w-100">+ Keranjang</button>`
-    : `<button class="btn btn-secondary btn-sm mt-auto w-100" disabled>Stok Habis</button>`;
+// ==========================================
+// 2. RENDER KATALOG & KATEGORI
+// ==========================================
+function renderKategoriButtons() {
+  const container = document.getElementById('categoryButtons');
+  if (!container) return;
+
+  const kategoriSet = new Set(['Semua']);
+  produkList.forEach(p => {
+    if (p.kategori) kategoriSet.add(p.kategori);
+  });
+
+  container.innerHTML = '';
+  kategoriSet.forEach(kat => {
+    const isAct = kat === activeCategory ? 'btn-primary' : 'btn-outline-primary';
+    container.innerHTML += `
+      <button class="btn ${isAct} btn-sm" onclick="setKategori('${kat}')">${kat}</button>
+    `;
+  });
+}
+
+function setKategori(kat) {
+  activeCategory = kat;
+  renderKategoriButtons();
+  renderSemuaTampilan();
+}
+
+function filterProduk() {
+  renderSemuaTampilan();
+}
+
+function renderSemuaTampilan() {
+  const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase();
+
+  // Filter berdasarkan pencarian & kategori
+  const filtered = produkList.filter(p => {
+    const matchSearch = p.nama.toLowerCase().includes(keyword) || (p.deskripsi && p.deskripsi.toLowerCase().includes(keyword));
+    const matchKat = activeCategory === 'Semua' || p.kategori === activeCategory;
+    return matchSearch && matchKat;
+  });
+
+  renderPopularProducts(filtered);
+  renderAllProducts(filtered);
+  renderFlashSaleProducts();
+}
+
+// Card Renderer Utility
+function createProductCard(p, isFlash = false) {
+  const imgSrc = p.gambar || 'https://via.placeholder.com/300';
+  const hargaDisplay = parseInt(p.harga || 0).toLocaleString('id-ID');
+  const deskripsiShort = p.deskripsi ? (p.deskripsi.length > 50 ? p.deskripsi.substring(0, 50) + '...' : p.deskripsi) : 'Klik untuk lihat detail';
+  const hasVideoBadge = p.video ? '<span class="badge bg-danger position-absolute top-0 start-0 m-2 z-1">▶ Ada Video</span>' : '';
 
   return `
-    <div class="col-6 col-md-4 col-lg-3">
-      <div class="card h-100 shadow-sm product-card">
-        <img src="${p.gambar}" class="card-img-top object-fit-cover cursor-pointer" style="height: 180px;" alt="${p.nama}" onclick="bukaDetailProduk(${p.id})">
+    <div class="col-md-3 col-sm-6">
+      <div class="card h-100 shadow-sm border-0 position-relative">
+        ${hasVideoBadge}
+        <img src="${imgSrc}" class="card-img-top object-fit-cover" style="height: 180px;" alt="${p.nama}">
         <div class="card-body d-flex flex-column">
-          <span class="badge bg-secondary mb-2 align-self-start">${p.kategori}</span>
-          <h6 class="card-title fw-bold text-truncate cursor-pointer" onclick="bukaDetailProduk(${p.id})" title="${p.nama}">${p.nama}</h6>
-          <p class="text-primary fw-bold mb-1">Rp ${p.harga.toLocaleString('id-ID')}</p>
-          <small class="text-muted mb-3">Stok: ${p.stok}</small>
-          ${tombolBeli}
+          <span class="badge bg-light text-dark border align-self-start mb-2">${p.kategori || 'Umum'}</span>
+          <h6 class="card-title fw-bold text-truncate">${p.nama}</h6>
+          <p class="card-text text-muted small flex-grow-1">${deskripsiShort}</p>
+          <div class="mt-2">
+            <div class="fw-bold ${isFlash ? 'text-danger' : 'text-primary'} fs-5 mb-2">
+              Rp ${hargaDisplay}
+            </div>
+            <div class="d-grid gap-1">
+              <button onclick="bukaDetailProdukById(${p.id})" class="btn btn-outline-primary btn-sm">Lihat Detail</button>
+              <button onclick="tambahKeKeranjangById(${p.id})" class="btn btn-primary btn-sm">+ Keranjang</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   `;
 }
 
-// 6. Filter & Pencarian
-function filterProduk() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
-  const filtered = produkList.filter(p => p.nama.toLowerCase().includes(query));
-  renderProduk(filtered);
-}
-
-function filterKategori(kat) {
-  if (kat === 'Semua') {
-    renderProduk(produkList);
-  } else {
-    const filtered = produkList.filter(p => p.kategori === kat);
-    renderProduk(filtered);
-  }
-}
-
-function renderCategoryButtons() {
-  const categories = ['Semua', ...new Set(produkList.map(p => p.kategori))];
-  const container = document.getElementById('categoryButtons');
-  container.innerHTML = categories.map(k => `
-    <button onclick="filterKategori('${k}')" class="btn btn-outline-primary btn-sm me-1 mb-1">${k}</button>
-  `).join('');
-}
-
-// 7. Tambah ke Keranjang
-function tambahKeKeranjang(id) {
-  const produk = produkList.find(p => p.id === id);
-  if (!produk) return;
-
-  if (produk.stok <= 0) {
-    alert('Maaf, stok produk ini telah habis!');
-    return;
-  }
-
-  keranjangList.push(produk);
-  localStorage.setItem('keranjang', JSON.stringify(keranjangList));
-  updateCartBadge();
-  alert(`${produk.nama} berhasil ditambahkan ke keranjang!`);
-}
-
-function updateCartBadge() {
-  const badge = document.getElementById('cartCount');
-  if (badge) {
-    badge.innerText = keranjangList.length;
-  }
-}
-
-// 8. Detail Produk & Modal Video
-function bukaDetailProduk(id) {
-  const produk = produkList.find(p => p.id === id);
-  if (!produk) return;
-
-  document.getElementById('detailGambar').src = produk.gambar;
-  document.getElementById('detailKategori').innerText = produk.kategori;
-  document.getElementById('detailNama').innerText = produk.nama;
-  document.getElementById('detailHarga').innerText = `Rp ${produk.harga.toLocaleString('id-ID')}`;
-  document.getElementById('detailStok').innerText = `Sisa Stok: ${produk.stok}`;
-  document.getElementById('detailDeskripsi').innerText = produk.deskripsi || "Tidak ada deskripsi produk.";
-
-  // Pengaturan Video YouTube
-  const videoWrapper = document.getElementById('videoWrapper');
-  const detailVideo = document.getElementById('detailVideo');
-
-  if (produk.video && produk.video.trim() !== '') {
-    let videoUrl = produk.video;
-    if (videoUrl.includes('watch?v=')) {
-      videoUrl = videoUrl.replace('watch?v=', 'embed/');
-    }
-    detailVideo.src = videoUrl;
-    videoWrapper.classList.remove('d-none');
-  } else {
-    detailVideo.src = '';
-    videoWrapper.classList.add('d-none');
-  }
-
-  // Tombol aksi pada modal
-  const actionContainer = document.getElementById('detailActionBtn');
-  actionContainer.innerHTML = produk.stok > 0
-    ? `<button onclick="tambahKeKeranjang(${produk.id})" class="btn btn-primary w-100">+ Tambah ke Keranjang</button>`
-    : `<button class="btn btn-secondary w-100" disabled>Stok Habis</button>`;
-
-  const modalElement = document.getElementById('modalDetailProduk');
-  const modal = new bootstrap.Modal(modalElement);
-  modal.show();
-}
-
-function tutupDetailVideo() {
-  const detailVideo = document.getElementById('detailVideo');
-  if (detailVideo) detailVideo.src = '';
-}
-
-// 9. Render Flash Sale
-function renderFlashSale() {
-  const container = document.getElementById('flashSaleContainer');
+function renderPopularProducts(list) {
+  const container = document.getElementById('popularProductsContainer');
+  if (!container) return;
   container.innerHTML = '';
 
-  if (flashSaleList.length === 0) {
-    container.innerHTML = '<div class="col-12"><p class="text-muted">Belum ada promo Flash Sale saat ini.</p></div>';
+  const popular = list.slice(0, 4);
+  if (popular.length === 0) {
+    container.innerHTML = '<div class="col-12 text-muted small">Tidak ada produk terpopuler.</div>';
     return;
   }
-
-  flashSaleList.forEach(fs => {
-    const p = produkList.find(prod => prod.id === fs.produkId);
-    if (!p) return;
-
-    const hargaDiskon = p.harga - (p.harga * (fs.diskon / 100));
-
-    container.innerHTML += `
-      <div class="col-6 col-md-4 col-lg-3">
-        <div class="card h-100 shadow-sm position-relative">
-          <span class="badge bg-danger position-absolute top-0 start-0 m-2 px-2 py-1 fs-6">-${fs.diskon}%</span>
-          <img src="${p.gambar}" class="card-img-top object-fit-cover cursor-pointer" style="height: 180px;" alt="${p.nama}" onclick="bukaDetailProduk(${p.id})">
-          <div class="card-body d-flex flex-column">
-            <h6 class="card-title fw-bold text-truncate cursor-pointer" onclick="bukaDetailProduk(${p.id})">${p.nama}</h6>
-            <div class="mb-2">
-              <span class="text-decoration-line-through text-muted small me-2">Rp ${p.harga.toLocaleString('id-ID')}</span>
-              <span class="text-danger fw-bold">Rp ${hargaDiskon.toLocaleString('id-ID')}</span>
-            </div>
-            <button onclick="tambahKeKeranjangFlash(${p.id}, ${hargaDiskon})" class="btn btn-danger btn-sm mt-auto w-100">
-              Beli Flash Sale
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
+  popular.forEach(p => {
+    container.innerHTML += createProductCard(p);
   });
 }
 
-function tambahKeKeranjangFlash(produkId, hargaDiskon) {
-  const produk = produkList.find(p => p.id === produkId);
-  if (!produk) return;
+function renderAllProducts(list) {
+  const container = document.getElementById('allProductsContainer');
+  if (!container) return;
+  container.innerHTML = '';
 
-  if (produk.stok <= 0) {
-    alert('Maaf, stok produk Flash Sale ini telah habis!');
+  if (list.length === 0) {
+    container.innerHTML = '<div class="col-12 text-center text-muted py-4">Produk tidak ditemukan.</div>';
     return;
   }
-
-  const itemDiskon = { ...produk, harga: hargaDiskon };
-  keranjangList.push(itemDiskon);
-  localStorage.setItem('keranjang', JSON.stringify(keranjangList));
-  updateCartBadge();
-  alert(`${produk.nama} (Flash Sale) berhasil ditambahkan!`);
+  list.forEach(p => {
+    container.innerHTML += createProductCard(p);
+  });
 }
 
-// 10. Render Keranjang
-function renderKeranjang() {
-  const tbody = document.getElementById('cartTableBody');
-  tbody.innerHTML = '';
+function renderFlashSaleProducts() {
+  const container = document.getElementById('flashSaleContainer');
+  if (!container) return;
+  container.innerHTML = '';
 
+  // Produk Flash Sale adalah produk yang bertipe / berisikan flag promo (atau 4 produk acak)
+  const flashList = produkList.filter(p => p.isFlashSale || p.stok < 10).slice(0, 8);
+  const displayList = flashList.length > 0 ? flashList : produkList.slice(0, 4);
+
+  if (displayList.length === 0) {
+    container.innerHTML = '<div class="col-12 text-white">Belum ada promo flash sale.</div>';
+    return;
+  }
+  displayList.forEach(p => {
+    container.innerHTML += createProductCard(p, true);
+  });
+}
+
+// ==========================================
+// 3. LOGIKA DETAIL PRODUK (DESKRIPSI & VIDEO)
+// ==========================================
+function bukaDetailProdukById(id) {
+  const p = produkList.find(item => item.id == id);
+  if (!p) return;
+
+  document.getElementById('detailNamaHeader').innerText = p.nama;
+  document.getElementById('detailNama').innerText = p.nama;
+  document.getElementById('detailKategori').innerText = p.kategori || 'Umum';
+  document.getElementById('detailHarga').innerText = `Rp ${parseInt(p.harga || 0).toLocaleString('id-ID')}`;
+  document.getElementById('detailStok').innerText = `Stok Tersedia: ${p.stok || 0}`;
+  document.getElementById('detailDeskripsi').innerText = p.deskripsi || 'Tidak ada deskripsi produk.';
+  document.getElementById('detailGambar').src = p.gambar || 'https://via.placeholder.com/300';
+
+  // Handling Video Player
+  const wrapper = document.getElementById('videoWrapper');
+  const player = document.getElementById('detailVideoContainer');
+  player.innerHTML = '';
+
+  if (p.video && p.video.trim() !== '') {
+    wrapper.classList.remove('d-none');
+
+    // Cek jenis video (File MP4/Base64 vs Link YouTube)
+    if (p.video.startsWith('data:video') || p.video.endsWith('.mp4')) {
+      player.innerHTML = `
+        <video controls class="w-100 rounded" style="max-height: 200px;">
+          <source src="${p.video}" type="video/mp4">
+          Browser tidak mendukung pemutar video.
+        </video>`;
+    } else if (p.video.includes('youtube.com') || p.video.includes('youtu.be')) {
+      let embedUrl = p.video.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/');
+      player.innerHTML = `
+        <div class="ratio ratio-16x9 rounded overflow-hidden">
+          <iframe src="${embedUrl}" title="YouTube video player" allowfullscreen></iframe>
+        </div>`;
+    } else {
+      player.innerHTML = `
+        <video controls class="w-100 rounded" style="max-height: 200px;">
+          <source src="${p.video}">
+        </video>`;
+    }
+  } else {
+    wrapper.classList.add('d-none');
+  }
+
+  // Tombol aksi di modal
+  document.getElementById('detailActionBtn').innerHTML = `
+    <button onclick="tambahKeKeranjangById(${p.id}); detailModalInstance.hide();" class="btn btn-primary btn-lg w-100">
+      + Tambah ke Keranjang
+    </button>
+  `;
+
+  detailModalInstance.show();
+}
+
+function tutupDetailVideo() {
+  const player = document.getElementById('detailVideoContainer');
+  if (player) player.innerHTML = '';
+}
+
+// ==========================================
+// 4. KERANJANG & CHECKOUT
+// ==========================================
+function tambahKeKeranjangById(id) {
+  const p = produkList.find(item => item.id == id);
+  if (!p) return;
+
+  const itemInCart = keranjangList.find(item => item.id == id);
+  if (itemInCart) {
+    itemInCart.qty = (itemInCart.qty || 1) + 1;
+  } else {
+    keranjangList.push({
+      id: p.id,
+      nama: p.nama,
+      harga: p.harga,
+      gambar: p.gambar,
+      qty: 1
+    });
+  }
+
+  syncStorage();
+  alert(`"${p.nama}" berhasil ditambahkan ke keranjang!`);
+}
+
+function renderCartTable() {
+  const tbody = document.getElementById('cartTableBody');
+  const totalEl = document.getElementById('cartTotal');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
   if (keranjangList.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Keranjang Anda masih kosong.</td></tr>';
-    document.getElementById('cartTotal').innerText = '0';
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">Keranjang Anda masih kosong.</td></tr>';
+    totalEl.innerText = '0';
     return;
   }
 
-  let total = 0;
-  keranjangList.forEach((item, index) => {
-    total += item.harga;
+  let totalSemua = 0;
+  keranjangList.forEach((item, idx) => {
+    const qty = item.qty || 1;
+    const subtotal = parseInt(item.harga || 0) * qty;
+    totalSemua += subtotal;
+
     tbody.innerHTML += `
       <tr>
         <td>
-          <div class="d-flex align-items-center">
-            <img src="${item.gambar}" width="50" height="50" class="rounded me-2 object-fit-cover" alt="${item.nama}">
-            <span class="fw-semibold">${item.nama}</span>
+          <div class="d-flex align-items-center gap-2">
+            <img src="${item.gambar || 'https://via.placeholder.com/50'}" width="40" height="40" class="rounded object-fit-cover">
+            <div>
+              <div class="fw-bold small">${item.nama}</div>
+            </div>
           </div>
         </td>
-        <td>Rp ${item.harga.toLocaleString('id-ID')}</td>
-        <td>
-          <button onclick="hapusKeranjangItem(${index})" class="btn btn-sm btn-outline-danger">Hapus</button>
+        <td>Rp ${parseInt(item.harga || 0).toLocaleString('id-ID')}</td>
+        <td class="fw-bold text-primary">
+          <div class="d-flex align-items-center gap-1">
+            <button onclick="updateQty(${idx}, -1)" class="btn btn-sm btn-outline-secondary py-0 px-2">-</button>
+            <span>${qty}</span>
+            <button onclick="updateQty(${idx}, 1)" class="btn btn-sm btn-outline-secondary py-0 px-2">+</button>
+          </div>
+        </td>
+        <td class="text-end">
+          <button onclick="hapusCartItem(${idx})" class="btn btn-sm btn-outline-danger">Hapus</button>
         </td>
       </tr>
     `;
   });
 
-  document.getElementById('cartTotal').innerText = total.toLocaleString('id-ID');
+  totalEl.innerText = totalSemua.toLocaleString('id-ID');
 }
 
-function hapusKeranjangItem(index) {
+function updateQty(index, delta) {
+  keranjangList[index].qty = (keranjangList[index].qty || 1) + delta;
+  if (keranjangList[index].qty <= 0) {
+    keranjangList.splice(index, 1);
+  }
+  syncStorage();
+  renderCartTable();
+}
+
+function hapusCartItem(index) {
   keranjangList.splice(index, 1);
-  localStorage.setItem('keranjang', JSON.stringify(keranjangList));
-  renderKeranjang();
-  updateCartBadge();
+  syncStorage();
+  renderCartTable();
 }
 
-// 11. Handle Checkout
 function handleCheckout(e) {
   e.preventDefault();
 
   if (keranjangList.length === 0) {
-    alert('Keranjang belanja Anda kosong!');
+    alert('Keranjang belanja Anda masih kosong!');
     return;
   }
 
-  const nama = document.getElementById('custNama').value;
-  const telp = document.getElementById('custTelp').value;
-  const alamat = document.getElementById('custAlamat').value;
+  const nama = document.getElementById('custNama').value.trim();
+  const telp = document.getElementById('custTelp').value.trim();
+  const alamat = document.getElementById('custAlamat').value.trim();
+  const metodeBayar = document.querySelector('input[name="metodeBayar"]:checked')?.value || 'QRIS';
 
-  const metodeSelected = document.querySelector('input[name="metodeBayar"]:checked');
-  const metodePembayaran = metodeSelected ? metodeSelected.value : 'Transfer Bank';
-
-  const totalHarga = keranjangList.reduce((sum, item) => sum + item.harga, 0);
+  const totalHarga = keranjangList.reduce((acc, curr) => acc + (parseInt(curr.harga || 0) * (curr.qty || 1)), 0);
 
   const pesananBaru = {
     id: Date.now(),
-    nama,
+    tanggal: new Date().toLocaleString('id-ID'),
+    nama: nama,
     telepon: telp,
-    alamat,
-    metodePembayaran,
-    totalHarga,
-    tanggal: new Date().toISOString(),
-    items: [...keranjangList]
+    alamat: alamat,
+    metodeBayar: metodeBayar,
+    items: keranjangList,
+    totalHarga: totalHarga,
+    status: 'Pending'
   };
 
-  const pesananList = JSON.parse(localStorage.getItem('pesanan')) || [];
+  // Simpan ke pesananList lokal agar terbaca oleh Admin
   pesananList.push(pesananBaru);
   localStorage.setItem('pesanan', JSON.stringify(pesananList));
 
-  // Kosongkan Keranjang
+  // Reset keranjang
   keranjangList = [];
-  localStorage.setItem('keranjang', JSON.stringify([]));
+  syncStorage();
 
-  alert(`Pesanan Berhasil!\nMetode Pembayaran: ${metodePembayaran}`);
   document.getElementById('checkoutForm').reset();
-  renderKeranjang();
-  updateCartBadge();
+  renderCartTable();
+
+  alert('Pesanan Anda berhasil dibuat! Admin akan memproses pesanan Anda.');
   showSection('dashboard');
 }
-
-// 12. Logout
-function logout() {
-  localStorage.removeItem('userLoggedIn');
-  localStorage.removeItem('isAdmin');
-  window.location.href = 'login.html';
-}
-
-// Initial Render
-renderProduk();
