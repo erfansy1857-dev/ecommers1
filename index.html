@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Toko Online - Pelanggan</title>
+  <title>Toko Online - BlueThree</title>
   <!-- Bootstrap 5.3 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -11,7 +11,7 @@
 <body>
 
   <!-- Floating Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary floating-nav">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary floating-nav sticky-top shadow-sm">
     <div class="container">
       <a class="navbar-brand fw-bold" href="#">BlueThree</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -40,14 +40,16 @@
 
   <main class="container py-4">
 
-    <!-- SEKSI DASHBOARD -->
+    <!-- 1. SEKSI DASHBOARD -->
     <section id="sec-dashboard">
-      <div class="row mb-4 align-items-center">
-        <div class="col-md-6 mb-2 mb-md-0">
+      <div class="row mb-4 align-items-center g-2">
+        <div class="col-md-6">
           <input type="text" id="searchInput" class="form-control" placeholder="Cari Produk..." onkeyup="filterProduk()">
         </div>
-        <div class="col-md-6 text-md-end" id="categoryButtons">
-          <!-- Filter Kategori diisi via JS -->
+        <div class="col-md-6 text-md-end">
+          <div id="categoryButtons" class="d-flex flex-wrap gap-1 justify-md-content-end">
+            <!-- Filter Kategori diisi via JS -->
+          </div>
         </div>
       </div>
 
@@ -60,17 +62,20 @@
       <div class="row g-3" id="allProductsContainer"></div>
     </section>
 
-    <!-- SEKSI FLASH SALE -->
+    <!-- 2. SEKSI FLASH SALE -->
     <section id="sec-flashsale" class="d-none">
-      <h3 class="fw-bold mb-4 text-danger">Promo Flash Sale 🔥</h3>
+      <div class="p-3 bg-danger text-white rounded mb-4 shadow-sm">
+        <h3 class="fw-bold mb-0">🔥 Promo Flash Sale Hari Ini!</h3>
+        <p class="mb-0">Dapatkan diskon spesial sebelum penawaran berakhir!</p>
+      </div>
       <div class="row g-3" id="flashSaleContainer"></div>
     </section>
 
-    <!-- SEKSI KERANJANG & CHECKOUT -->
+    <!-- 3. SEKSI KERANJANG & CHECKOUT -->
     <section id="sec-keranjang" class="d-none">
       <h3 class="fw-bold mb-4">Keranjang Belanja</h3>
-      <div class="row">
-        <div class="col-lg-8 mb-4">
+      <div class="row g-4">
+        <div class="col-lg-8">
           <div class="card shadow-sm p-3">
             <div class="table-responsive">
               <table class="table align-middle">
@@ -90,21 +95,22 @@
           </div>
         </div>
 
+        <!-- Form Checkout -->
         <div class="col-lg-4">
           <div class="card shadow-sm p-3">
             <h5 class="fw-bold mb-3">Form Checkout</h5>
             <form id="checkoutForm" onsubmit="handleCheckout(event)">
               <div class="mb-3">
-                <label class="form-label">Nama Lengkap</label>
-                <input type="text" id="custNama" class="form-control" required>
+                <label for="custNama" class="form-label fw-semibold">Nama Lengkap</label>
+                <input type="text" id="custNama" class="form-control" placeholder="Masukkan nama lengkap" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">No Telepon</label>
-                <input type="tel" id="custTelp" class="form-control" required>
+                <label for="custTelp" class="form-label fw-semibold">No Telepon / WhatsApp</label>
+                <input type="tel" id="custTelp" class="form-control" placeholder="08xxxxxxxxxx" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">Alamat Lengkap</label>
-                <textarea id="custAlamat" class="form-control" rows="3" required></textarea>
+                <label for="custAlamat" class="form-label fw-semibold">Alamat Lengkap</label>
+                <textarea id="custAlamat" class="form-control" rows="3" placeholder="Alamat jalan, nomor rumah, kecamatan, kota" required></textarea>
               </div>
 
               <!-- Pilihan Metode Pembayaran -->
@@ -138,7 +144,7 @@
                 </div>
               </div>
 
-              <button type="submit" class="btn btn-success w-100">Checkout Sekarang</button>
+              <button type="submit" class="btn btn-success w-100 fw-bold">Checkout Sekarang</button>
             </form>
           </div>
         </div>
@@ -147,7 +153,42 @@
 
   </main>
 
-  <!-- Bootstrap JS -->
+  <!-- MODAL DETAIL PRODUK -->
+  <div class="modal fade" id="modalDetailProduk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Detail Produk</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="tutupDetailVideo()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <img id="detailGambar" src="" class="img-fluid rounded mb-3 w-100 object-fit-cover shadow-sm" style="max-height: 250px;" alt="Detail Gambar">
+              <div id="videoWrapper" class="d-none">
+                <h6 class="fw-bold mb-2">Video Produk:</h6>
+                <div class="ratio ratio-16x9 rounded overflow-hidden shadow-sm">
+                  <iframe id="detailVideo" src="" title="Video Produk" allowfullscreen></iframe>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <span class="badge bg-secondary mb-2" id="detailKategori"></span>
+              <h4 class="fw-bold" id="detailNama"></h4>
+              <h5 class="text-primary fw-bold my-2" id="detailHarga"></h5>
+              <small class="text-muted d-block mb-3" id="detailStok"></small>
+              <hr>
+              <h6 class="fw-bold">Deskripsi Produk:</h6>
+              <p id="detailDeskripsi" class="text-secondary" style="white-space: pre-line;"></p>
+              <div id="detailActionBtn" class="mt-4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5.3 JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="script.js"></script>
 </body>
