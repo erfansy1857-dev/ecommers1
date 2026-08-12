@@ -202,3 +202,20 @@ body {
 @media (min-width: 900px) {
     .grid-4 { grid-template-columns: repeat(4, 1fr); }
 }
+/* Tambahkan kode ini pada bagian bawah css/style.css */
+
+/* Badges Status Pesanan */
+.badge-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+}
+.status-baru { background-color: #f59e0b; }      /* Kuning/Amber */
+.status-diproses { background-color: #0284c7; }  /* Biru */
+.status-dikirim { background-color: #8b5cf6; }   /* Ungu */
+.status-selesai { background-color: #16a34a; }   /* Hijau */
+.status-dibatalkan { background-color: #dc2626; }/* Merah */
