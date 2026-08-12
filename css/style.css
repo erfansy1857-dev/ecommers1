@@ -1,6 +1,4 @@
-/* ==========================================================================
-   RESET & BASE STYLES (Tema Modern Biru-Abu)
-   ========================================================================== */
+/* RESET & BASE STYLES */
 * {
     margin: 0;
     padding: 0;
@@ -51,7 +49,7 @@ body {
 .text-white { color: var(--white); }
 .fs-large { font-size: 1.25rem; }
 
-/* Grid Layouts Mobile First */
+/* Grid Layouts */
 .grid-2, .grid-3, .grid-4, .grid-2-custom {
     display: grid;
     grid-template-columns: 1fr;
@@ -77,7 +75,7 @@ body {
 }
 .nav-item.active { color: var(--white); font-weight: bold; border-bottom: 2px solid var(--white); }
 
-/* CARDS & BUTTONS */
+/* CARDS & STATS */
 .card {
     background: var(--white);
     border-radius: 8px;
@@ -87,7 +85,9 @@ body {
 }
 .login-card { width: 100%; max-width: 380px; margin: 16px; }
 .stat-number { font-size: 1.8rem; font-weight: bold; margin-top: 8px; }
+.stat-number-sm { font-size: 1.2rem; font-weight: bold; margin-top: 8px; }
 
+/* BUTTONS */
 .btn {
     padding: 10px 16px;
     border: none;
@@ -119,6 +119,7 @@ body {
 .form-control:focus { border-color: var(--primary); }
 
 .table-responsive { overflow-x: auto; }
+.scrollable-table { max-height: 320px; overflow-y: auto; }
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -130,10 +131,26 @@ body {
     text-align: left;
     font-size: 13px;
 }
-.table th { background: #f1f5f9; }
+.table th { background: #f1f5f9; position: sticky; top: 0; z-index: 10; }
 .table-img { width: 45px; height: 45px; object-fit: cover; border-radius: 4px; }
 
-/* PRODUCT CARD (KATALOG) */
+/* STATUS BADGES */
+.badge-status {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+}
+.status-baru { background-color: #f59e0b; }
+.status-diproses { background-color: #0284c7; }
+.status-dikirim { background-color: #8b5cf6; }
+.status-selesai { background-color: #16a34a; }
+.status-dibatalkan { background-color: #dc2626; }
+
+/* PRODUCT CARD */
 .product-card {
     position: relative;
     display: flex;
@@ -159,7 +176,7 @@ body {
 }
 .old-price { text-decoration: line-through; color: var(--secondary); font-size: 12px; }
 
-/* MODAL OVERLAY & CONTENT */
+/* MODALS */
 .modal {
     position: fixed;
     top: 0; left: 0; 
@@ -189,9 +206,8 @@ body {
     cursor: pointer;
     color: var(--secondary);
 }
-.close-btn:hover { color: var(--danger); }
 
-/* BREAKPOINTS RESPONSIVE */
+/* RESPONSIVE BREAKPOINTS */
 @media (min-width: 600px) {
     .grid-2 { grid-template-columns: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); }
@@ -202,20 +218,3 @@ body {
 @media (min-width: 900px) {
     .grid-4 { grid-template-columns: repeat(4, 1fr); }
 }
-/* Tambahkan kode ini pada bagian bawah css/style.css */
-
-/* Badges Status Pesanan */
-.badge-status {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: bold;
-    color: #ffffff;
-    text-align: center;
-}
-.status-baru { background-color: #f59e0b; }      /* Kuning/Amber */
-.status-diproses { background-color: #0284c7; }  /* Biru */
-.status-dikirim { background-color: #8b5cf6; }   /* Ungu */
-.status-selesai { background-color: #16a34a; }   /* Hijau */
-.status-dibatalkan { background-color: #dc2626; }/* Merah */
