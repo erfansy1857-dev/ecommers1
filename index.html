@@ -3,134 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ElectroStore - Toko Elektronik & HP</title>
+    <title>E-Store Elektronik</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-dark pb-bottom-nav">
+<body>
 
-    <!-- Header Atas Pelanggan -->
-    <header class="top-header">
-        <div class="header-container">
-            <h2 class="brand-logo">📱 Electro<span>Store</span></h2>
-            <a href="login.html" class="btn btn-sm btn-outline-light">Ganti User</a>
-        </div>
+    <!-- Header Navbar Toko -->
+    <header class="navbar bg-primary text-white sticky-top">
+        <div class="logo">📱 E-Store</div>
+        <nav class="nav-links">
+            <a href="#" class="nav-item active" onclick="switchCustomerTab(event, 'katalog')">Katalog</a>
+            <a href="#" class="nav-item" onclick="switchCustomerTab(event, 'flashsale')">Flash Sale⚡</a>
+            <a href="#" class="nav-item" onclick="switchCustomerTab(event, 'keranjang')">Keranjang (<span id="cart-count">0</span>)</a>
+        </nav>
     </header>
 
-    <main class="container mt-3">
+    <div class="container mt-2 mb-4">
 
-        <!-- TAB 1: CATALOG DASHBOARD -->
-        <section id="user-tab-home" class="user-tab-content active">
+        <!-- TAB KATALOG -->
+        <section id="tab-katalog" class="tab-content">
             <!-- Pencarian & Filter -->
-            <div class="search-box mb-3">
-                <input type="text" id="searchInput" class="form-control" placeholder="Cari HP, Laptop, atau Aksesori..." onkeyup="filterUserProducts()">
-            </div>
-
-            <div class="category-scroll mb-3">
-                <button class="btn-cat active" onclick="setCategoryFilter('Semua', this)">Semua</button>
-                <button class="btn-cat" onclick="setCategoryFilter('HP', this)">HP</button>
-                <button class="btn-cat" onclick="setCategoryFilter('Laptop', this)">Laptop</button>
-                <button class="btn-cat" onclick="setCategoryFilter('TV', this)">TV</button>
-                <button class="btn-cat" onclick="setCategoryFilter('Aksesori', this)">Aksesori</button>
-                <button class="btn-cat" onclick="setCategoryFilter('Audio', this)">Audio</button>
-            </div>
-
-            <!-- Produk Terpopuler -->
-            <div id="popularSection">
-                <h3 class="section-title">🔥 Produk Terpopuler</h3>
-                <div id="popularGrid" class="product-grid mb-4">
-                    <!-- Controlled by JS -->
+            <div class="search-filter-box mb-2">
+                <input type="text" id="search-input" class="form-control mb-1" placeholder="Cari nama produk..." oninput="filterProducts()">
+                <div class="category-buttons">
+                    <button type="button" class="btn btn-sm btn-category active" onclick="filterCategory(event, 'Semua')">Semua</button>
+                    <button type="button" class="btn btn-sm btn-category" onclick="filterCategory(event, 'HP')">HP</button>
+                    <button type="button" class="btn btn-sm btn-category" onclick="filterCategory(event, 'Laptop')">Laptop</button>
+                    <button type="button" class="btn btn-sm btn-category" onclick="filterCategory(event, 'TV')">TV</button>
+                    <button type="button" class="btn btn-sm btn-category" onclick="filterCategory(event, 'Aksesori')">Aksesori</button>
                 </div>
             </div>
 
-            <!-- Semua / Catalog Produk -->
-            <h3 class="section-title">Katalog Produk</h3>
-            <div id="userProductGrid" class="product-grid">
-                <!-- Controlled by JS -->
+            <!-- Produk Terpopuler (Stok Paling Sedikit) -->
+            <div id="section-populer" class="mb-3">
+                <h3 class="text-danger mb-1">🔥 Produk Terpopuler (Stok Terbatas)</h3>
+                <div class="grid-4 gap-2" id="grid-populer">
+                    <!-- Data diisi JS -->
+                </div>
+            </div>
+
+            <hr class="mb-2">
+
+            <!-- Semua Produk -->
+            <h3>Semua Produk</h3>
+            <div class="grid-4 gap-2 mt-1" id="grid-produk">
+                <!-- Data diisi JS -->
             </div>
         </section>
 
-        <!-- TAB 2: FLASH SALE -->
-        <section id="user-tab-flashsale" class="user-tab-content">
-            <div class="flash-header card mb-3">
-                <h2>⚡ Flash Sale Hari Ini!</h2>
-                <p>Harga termurah waktu terbatas. Buruan sebelum kehabisan!</p>
-            </div>
-            <div id="userFlashGrid" class="product-grid">
-                <!-- Controlled by JS -->
+        <!-- TAB FLASH SALE -->
+        <section id="tab-flashsale-cust" class="tab-content hidden">
+            <h2 class="text-danger mb-2">⚡ Promo Flash Sale Hari Ini!</h2>
+            <div class="grid-4 gap-2" id="grid-flashsale">
+                <!-- Data diisi JS -->
             </div>
         </section>
 
-        <!-- TAB 3: KERANJANG & CHECKOUT -->
-        <section id="user-tab-cart" class="user-tab-content">
-            <h3 class="section-title">Keranjang Belanja</h3>
-            <div id="cartItemsContainer" class="cart-list mb-3">
-                <!-- Controlled by JS -->
-            </div>
+        <!-- TAB KERANJANG & CHECKOUT -->
+        <section id="tab-keranjang" class="tab-content hidden">
+            <h2>Keranjang Belanja</h2>
+            <div class="grid-2-custom gap-2 mt-2">
+                <!-- Daftar Item Keranjang -->
+                <div class="card">
+                    <h3>Daftar Barang</h3>
+                    <div id="cart-items-list" class="mt-1">
+                        <!-- Items diisi JS -->
+                    </div>
+                    <hr class="mt-2 mb-1">
+                    <div class="flex-between">
+                        <strong>Total Pembayaran:</strong>
+                        <strong id="cart-total-price" class="text-primary fs-large">Rp 0</strong>
+                    </div>
+                </div>
 
-            <div class="card checkout-card">
-                <h4>Form Checkout Pemesanan</h4>
-                <form id="checkoutForm" onsubmit="handleCheckout(event)">
-                    <div class="form-group">
-                        <label>Nama Lengkap</label>
-                        <input type="text" id="custName" class="form-control" required placeholder="Contoh: Budi Santoso">
-                    </div>
-                    <div class="form-group">
-                        <label>Nomor WhatsApp / Telp</label>
-                        <input type="tel" id="custPhone" class="form-control" required placeholder="Contoh: 08123456789">
-                    </div>
-                    <div class="form-group">
-                        <label>Alamat Pengiriman Lengkap</label>
-                        <textarea id="custAddress" class="form-control" rows="2" required placeholder="Jl. Anggrek No. 12..."></textarea>
-                    </div>
-
-                    <div class="cart-summary flex-between mb-3">
-                        <span>Total Pembayaran:</span>
-                        <strong id="cartTotalPrice" class="text-accent fs-12">Rp 0</strong>
-                    </div>
-
-                    <button type="submit" class="btn btn-accent btn-block btn-lg">Bayar Sekarang</button>
-                </form>
+                <!-- Form Checkout -->
+                <div class="card">
+                    <h3>Data Pengiriman</h3>
+                    <form id="form-checkout" onsubmit="handleCheckout(event)" class="mt-1">
+                        <div class="form-group mb-1">
+                            <label>Nama Lengkap</label>
+                            <input type="text" id="cust-nama" class="form-control" placeholder="Nama Anda" required>
+                        </div>
+                        <div class="form-group mb-1">
+                            <label>No. Telepon / Whatsapp</label>
+                            <input type="tel" id="cust-phone" class="form-control" placeholder="08123456789" required>
+                        </div>
+                        <div class="form-group mb-1">
+                            <label>Alamat Lengkap</label>
+                            <textarea id="cust-alamat" class="form-control" rows="3" placeholder="Jl. Anggrek No. 123..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block mt-2">Buat Pesanan (Checkout)</button>
+                    </form>
+                </div>
             </div>
         </section>
 
-    </main>
-
-    <!-- POPUP MODAL DETAIL PRODUK -->
-    <div id="detailModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeDetailModal()">&times;</span>
-            <div id="detailContent">
-                <!-- Controlled by JS -->
-            </div>
-        </div>
     </div>
 
-    <!-- NAVBAR BAWAH (MOBILE NAVIGATION) -->
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchUserTab('home', this)">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-label">Dashboard</span>
-        </button>
-        <button class="nav-item" onclick="switchUserTab('flashsale', this)">
-            <span class="nav-icon">⚡</span>
-            <span class="nav-label">Flash Sale</span>
-        </button>
-        <button class="nav-item" onclick="switchUserTab('cart', this)">
-            <span class="nav-icon">🛒</span>
-            <span class="nav-label">Keranjang</span>
-            <span id="cartBadge" class="badge-count">0</span>
-        </button>
-    </nav>
-
     <script src="js/script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            initDefaultData();
-            renderUserProducts();
-            renderUserFlashSales();
-            renderCart();
-            startFlashTimers();
-        });
-    </script>
 </body>
 </html>
