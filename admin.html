@@ -8,17 +8,17 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="bg-light">
 
   <!-- Navbar Admin -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
     <div class="container">
       <a class="navbar-brand fw-bold text-warning" href="#">Admin Panel</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="adminNavbar">
-        <ul class="navbar-nav me-auto">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
             <a class="nav-link active" id="adm-dash-link" href="#" onclick="showAdminSection('dashboard')">Dashboard</a>
           </li>
@@ -47,15 +47,15 @@
       <h3 class="fw-bold mb-4">Ringkasan Dashboard</h3>
       <div class="row g-3">
         <div class="col-md-6">
-          <div class="card bg-primary text-white p-3 shadow-sm">
+          <div class="card bg-primary text-white p-3 shadow-sm rounded-3">
             <h5>Total Produk</h5>
-            <h2 class="fw-bold" id="dashTotalProduk">0</h2>
+            <h2 class="fw-bold m-0" id="dashTotalProduk">0</h2>
           </div>
         </div>
         <div class="col-md-6">
-          <div class="card bg-success text-white p-3 shadow-sm">
+          <div class="card bg-success text-white p-3 shadow-sm rounded-3">
             <h5>Jumlah Pesanan Hari Ini</h5>
-            <h2 class="fw-bold" id="dashPesananHariIni">0</h2>
+            <h2 class="fw-bold m-0" id="dashPesananHariIni">0</h2>
           </div>
         </div>
       </div>
@@ -64,12 +64,12 @@
     <!-- 2. PRODUK -->
     <section id="adm-sec-produk" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold">Manajemen Produk</h3>
+        <h3 class="fw-bold m-0">Manajemen Produk</h3>
         <button onclick="bukaModalProduk()" class="btn btn-primary">+ Tambah Produk</button>
       </div>
       <div class="card p-3 shadow-sm">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
+          <table class="table table-hover align-middle mb-0">
             <thead>
               <tr>
                 <th>Gambar</th>
@@ -77,7 +77,7 @@
                 <th>Kategori</th>
                 <th>Harga</th>
                 <th>Stok</th>
-                <th>Aksi</th>
+                <th class="text-end">Aksi</th>
               </tr>
             </thead>
             <tbody id="adminProdukTable"></tbody>
@@ -91,7 +91,7 @@
       <h3 class="fw-bold mb-3">Daftar Pesanan</h3>
       <div class="card p-3 shadow-sm">
         <div class="table-responsive">
-          <table class="table table-striped align-middle">
+          <table class="table table-striped align-middle mb-0">
             <thead>
               <tr>
                 <th>Tanggal</th>
@@ -99,7 +99,7 @@
                 <th>No Telp</th>
                 <th>Alamat</th>
                 <th>Barang</th>
-                <th>Pembayaran</th> <!-- KOLOM BARU -->
+                <th>Pembayaran</th>
                 <th>Total Harga</th>
               </tr>
             </thead>
@@ -112,19 +112,19 @@
     <!-- 4. FLASH SALE -->
     <section id="adm-sec-flashsale" class="d-none">
       <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold">Manajemen Flash Sale</h3>
+        <h3 class="fw-bold m-0">Manajemen Flash Sale</h3>
         <button onclick="tambahFlashSalePrompt()" class="btn btn-danger">+ Tambah Flash Sale</button>
       </div>
       <div class="card p-3 shadow-sm">
         <div class="table-responsive">
-          <table class="table align-middle">
+          <table class="table align-middle mb-0">
             <thead>
               <tr>
                 <th>Produk</th>
                 <th>Harga Asli</th>
                 <th>Diskon (%)</th>
                 <th>Harga Diskon</th>
-                <th>Aksi</th>
+                <th class="text-end">Aksi</th>
               </tr>
             </thead>
             <tbody id="adminFlashTable"></tbody>
@@ -140,25 +140,25 @@
         <div class="col-md-3">
           <div class="card p-3 shadow-sm border-start border-4 border-primary">
             <h6>Minggu Ini</h6>
-            <h4 class="fw-bold" id="lapMinggu">Rp 0</h4>
+            <h4 class="fw-bold m-0" id="lapMinggu">Rp 0</h4>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card p-3 shadow-sm border-start border-4 border-info">
             <h6>Bulan Ini</h6>
-            <h4 class="fw-bold" id="lapBulan">Rp 0</h4>
+            <h4 class="fw-bold m-0" id="lapBulan">Rp 0</h4>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card p-3 shadow-sm border-start border-4 border-warning">
             <h6>Tahun Ini</h6>
-            <h4 class="fw-bold" id="lapTahun">Rp 0</h4>
+            <h4 class="fw-bold m-0" id="lapTahun">Rp 0</h4>
           </div>
         </div>
         <div class="col-md-3">
           <div class="card p-3 shadow-sm border-start border-4 border-success">
             <h6>Total Pendapatan</h6>
-            <h4 class="fw-bold text-success" id="lapTotal">Rp 0</h4>
+            <h4 class="fw-bold text-success m-0" id="lapTotal">Rp 0</h4>
           </div>
         </div>
       </div>
@@ -183,31 +183,31 @@
         <form id="formProduk" onsubmit="simpanProduk(event)">
           <div class="modal-body">
             <input type="hidden" id="prodIndex">
-            
+
             <div class="mb-3">
               <label for="prodNama" class="form-label fw-semibold">Nama Produk</label>
               <input type="text" class="form-control" id="prodNama" placeholder="Contoh: Sepatu Sneaker" required>
             </div>
-            
+
             <div class="mb-3">
               <label for="prodKategori" class="form-label fw-semibold">Kategori</label>
               <input type="text" class="form-control" id="prodKategori" placeholder="Contoh: Pakaian / Elektronik" required>
             </div>
-            
+
             <div class="mb-3">
               <label for="prodHarga" class="form-label fw-semibold">Harga (Rp)</label>
-              <input type="number" class="form-control" id="prodHarga" placeholder="150000" required>
+              <input type="number" class="form-control" id="prodHarga" placeholder="150000" min="0" required>
             </div>
-            
+
             <div class="mb-3">
               <label for="prodStok" class="form-label fw-semibold">Stok</label>
-              <input type="number" class="form-control" id="prodStok" placeholder="10" required>
+              <input type="number" class="form-control" id="prodStok" placeholder="10" min="0" required>
             </div>
-            
+
             <div class="mb-3">
               <label for="prodGambarFile" class="form-label fw-semibold">Pilih Gambar dari Galeri</label>
               <input type="file" class="form-control" id="prodGambarFile" accept="image/*" onchange="previewGambarGaleri(event)">
-              
+
               <!-- Container Pratinjau Gambar -->
               <div class="mt-2 text-center">
                 <img id="prodGambarPreview" src="#" alt="Preview Gambar" class="img-thumbnail d-none" style="max-height: 180px;">
