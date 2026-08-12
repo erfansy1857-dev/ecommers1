@@ -1,11 +1,8 @@
-/* ==========================================================================
-   HELPER UTILITIES & LOCALSTORAGE MANAGEMENT
-   ========================================================================== */
+/* UTILITIES & LOCALSTORAGE MANAGEMENT */
 const getStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
 const setStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 const formatRupiah = (number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(number);
 
-// Helper Warna Badge Status
 function getStatusBadge(status) {
     let className = "status-baru";
     if (status === "Diproses") className = "status-diproses";
@@ -34,6 +31,7 @@ function initDefaultData() {
 document.addEventListener("DOMContentLoaded", () => {
     initDefaultData();
     
+    // Inisialisasi Halaman Admin
     if (document.getElementById("table-produk")) {
         window.checkAdminSession();
         window.renderAdminDashboard();
@@ -43,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.renderAdminReports();
     }
     
+    // Inisialisasi Halaman Pelanggan
     if (document.getElementById("grid-produk")) {
         window.renderCustomerProducts();
         window.renderCustomerFlashsale();
@@ -50,9 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-/* ==========================================================================
-   1. LOGIN & SESSION LOGIC (GLOBAL)
-   ========================================================================== */
+/* 1. LOGIN & SESSION LOGIC */
 window.showAdminForm = function() {
     document.getElementById("login-selection").classList.add("hidden");
     document.getElementById("admin-form").classList.remove("hidden");
@@ -91,9 +88,7 @@ window.logoutAdmin = function() {
     window.location.href = "login.html";
 };
 
-/* ==========================================================================
-   2. ADMIN TABS & MODALS CONTROLLERS (GLOBAL)
-   ========================================================================== */
+/* 2. ADMIN CONTROLLERS */
 window.switchAdminTab = function(e, tabName) {
     if (e) e.preventDefault();
     document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
@@ -210,7 +205,7 @@ window.openFlashsaleModal = function() {
     select.innerHTML = "";
     
     if (products.length === 0) {
-        alert("Belum ada produk. Tambahkan produk terlebih dahulu!");
+        alert("Belum ada produk!");
         return;
     }
 
@@ -271,7 +266,6 @@ window.renderAdminFlashsale = function() {
     });
 };
 
-// Admin Render Orders & Update Status
 window.renderAdminOrders = function() {
     const orders = getStorage("orders");
     const tbody = document.getElementById("table-pesanan");
@@ -316,6 +310,7 @@ window.updateOrderStatus = function(orderId, newStatus) {
 
     setStorage("orders", orders);
     window.renderAdminOrders();
+    window.renderAdminDashboard();
     alert(`Status pesanan berhasil diubah menjadi "${newStatus}"`);
 };
 
@@ -324,18 +319,46 @@ window.renderAdminDashboard = function() {
     const orders = getStorage("orders");
     const todayStr = new Date().toISOString().split('T')[0];
 
-    const dashTotal = document.getElementById("dash-total-produk");
-    if (dashTotal) dashTotal.innerText = products.length;
+    // Total Produk & Terjual
+    if (document.getElementById("dash-total-produk")) document.getElementById("dash-total-produk").innerText = products.length;
 
     let totalTerjualHariIni = 0;
+    let totalPendapatan = 0;
+
     orders.forEach(o => {
-        if (o.tanggal === todayStr && o.status !== "Dibatalkan") {
-            o.items.forEach(i => totalTerjualHariIni += i.qty);
+        if (o.status !== "Dibatalkan") {
+            totalPendapatan += o.total;
+            if (o.tanggal === todayStr) {
+                o.items.forEach(i => totalTerjualHariIni += i.qty);
+            }
         }
     });
 
-    const dashTerjual = document.getElementById("dash-terjual-hari-ini");
-    if (dashTerjual) dashTerjual.innerText = totalTerjualHariIni;
+    if (document.getElementById("dash-terjual-hari-ini")) document.getElementById("dash-terjual-hari-ini").innerText = totalTerjualHariIni;
+    if (document.getElementById("dash-total-pesanan")) document.getElementById("dash-total-pesanan").innerText = orders.length;
+    if (document.getElementById("dash-total-pendapatan")) document.getElementById("dash-total-pendapatan").innerText = formatRupiah(totalPendapatan);
+
+    // Render Tabel Pesanan Ringkas Dashboard (Scrollable)
+    const dashTbody = document.getElementById("table-dashboard-orders");
+    if (dashTbody) {
+        dashTbody.innerHTML = "";
+        if (orders.length === 0) {
+            dashTbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Belum ada pesanan masuk.</td></tr>`;
+        } else {
+            [...orders].reverse().forEach(o => {
+                dashTbody.innerHTML += `
+                    <tr>
+                        <td><strong>#${o.id}</strong></td>
+                        <td>${o.tanggal}</td>
+                        <td>${o.nama}</td>
+                        <td>${o.metodeBayar || 'Transfer'}</td>
+                        <td><strong>${formatRupiah(o.total)}</strong></td>
+                        <td>${getStatusBadge(o.status)}</td>
+                    </tr>
+                `;
+            });
+        }
+    }
 };
 
 window.renderAdminReports = function() {
@@ -359,9 +382,7 @@ window.renderAdminReports = function() {
     if(document.getElementById("lap-tahun")) document.getElementById("lap-tahun").innerText = formatRupiah(tahunIni);
 };
 
-/* ==========================================================================
-   3. CUSTOMER / SHOP LOGIC (GLOBAL)
-   ========================================================================== */
+/* 3. CUSTOMER LOGIC */
 let activeCategory = "Semua";
 
 window.switchCustomerTab = function(e, tabName) {
@@ -465,7 +486,7 @@ window.renderCustomerFlashsale = function() {
     });
 };
 
-// Cart, Checkout & Customer Order Search
+/* CART & CHECKOUT */
 window.addToCart = function(productId) {
     let cart = getStorage("cart");
     const products = getStorage("products");
@@ -637,18 +658,18 @@ window.handleCheckout = function(e) {
     setStorage("products", products);
     setStorage("cart", []);
 
-    alert(`Pesanan Berhasil dibuat!\nNomor Telepon: ${phone}\nMetode Pembayaran: ${metodeBayar}`);
+    alert(`Pesanan Berhasil Dibuat!\nNomor HP: ${phone}\nMetode Pembayaran: ${metodeBayar}`);
     document.getElementById("form-checkout").reset();
     window.renderCart();
     
-    // Otomatis arahkan dan tampilkan pesanan pelanggan
+    // Otomatis pindah ke Tab Riwayat Pesanan & Tampilkan Data
     const searchInput = document.getElementById("search-phone-input");
     if (searchInput) searchInput.value = phone;
     window.switchCustomerTab(null, "pesanan-cust");
     window.searchCustomerOrder();
 };
 
-// Fitur Cari Status Pesanan Pelanggan
+/* RIWAYAT & CARI STATUS PESANAN PELANGGAN */
 window.searchCustomerOrder = function() {
     const phoneInput = document.getElementById("search-phone-input").value.trim();
     const container = document.getElementById("customer-orders-container");
@@ -702,6 +723,7 @@ window.searchCustomerOrder = function() {
     });
 };
 
+/* EVENT LISTENER MODAL BACKDROP CLICK */
 window.addEventListener("click", function(event) {
     const modalProd = document.getElementById("modal-produk");
     const modalFS = document.getElementById("modal-flashsale");
